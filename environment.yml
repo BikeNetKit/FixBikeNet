@@ -1,0 +1,11 @@
+name: fixbikenet
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - jupyter
+  - geopandas>=0.14
+  - osmnx>=1.9.4
+  - pip
+  - pytest
+  - pixi-pycharm
