@@ -86,3 +86,24 @@ def weigh_edges(G, penalty):
         # add as attribute
         G.edges[edge]["weight"] = edge_weight
     return G
+
+def find_contact_nodes(G):
+    """
+    find nodes that have both edges with protected and without protected bike infrastructure incident on them
+
+    Parameters
+    ----------
+    G:networkx.Graph
+        undirected simple graph representing the street network with weighted edges
+
+    Return
+    ------
+    contact_nodes: list
+        list of all nodes that fulfill criteria to be a contact node
+    """
+    contact_nodes = []
+    for node in G.nodes:
+        pbis = set([G.edges[edge]["pbi"] for edge in G.edges(node)])
+        if len(pbis) == 2:
+            contact_nodes.append(node)
+    return contact_nodes
