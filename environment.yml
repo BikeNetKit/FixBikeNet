@@ -9,3 +9,4 @@ dependencies:
   - pip
   - pytest
   - pixi-pycharm
+  - pre-commit

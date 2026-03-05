@@ -6,3 +6,4 @@ numpy
 pandas
 python-igraph==0.9.9
 Shapely==1.8.0
+pre-commit
