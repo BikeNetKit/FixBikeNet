@@ -61,3 +61,28 @@ def find_edges_to_drop(g):
 
     edges_to_drop = list(set(edges_to_drop))
     return edges_to_drop
+
+def weigh_edges(G, penalty):
+    """
+    adds weight parameter to all edges in G, which is calculated by multiplying the length of the edge with the corresponding penalty value
+
+    Parameters
+    ----------
+    G: networkx.Graph
+        undirected simple graph representing the street network
+    penalty: dictionary
+        dictionary of penalty values, dependent on if edge has bike infrastructure or not
+
+    Returns
+    -------
+    G: networkx.Graph
+        undirected simple graph representing the street network with weighted edges
+    """
+    for edge in G.edges:
+        # compute edge weight
+        edge_pbi = G.edges[edge]["pbi"]
+        edge_length = G.edges[edge]["length"]
+        edge_weight = edge_length * penalty[edge_pbi]
+        # add as attribute
+        G.edges[edge]["weight"] = edge_weight
+    return G
