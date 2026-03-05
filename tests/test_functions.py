@@ -48,21 +48,21 @@ def test_find_edges_to_drop(create_parallel_test_graph, create_validation_edge_l
 
 @pytest.fixture
 def create_graph_to_weigh():
-    G = nx.MultiDiGraph()
+    G = nx.Graph()
     G.add_edges_from([(1, 2), (1, 3), (2, 3)])
-    attributes = {(1, 2, 0): {'length': 10, 'pbi': True},
-                  (1, 3, 0): {'length': 4, 'pbi': False},
-                  (2, 3, 0): {'length': 5, 'pbi': True}}
+    attributes = {(1, 2): {'length': 10, 'pbi': True},
+                  (1, 3): {'length': 4, 'pbi': False},
+                  (2, 3): {'length': 5, 'pbi': True}}
     nx.set_edge_attributes(G, attributes)
     return G
 
 @pytest.fixture
 def create_weighted_graph():
-    G = nx.MultiDiGraph()
+    G = nx.Graph()
     G.add_edges_from([(1, 2), (1, 3), (2, 3)])
-    attributes = {(1, 2, 0): {'length': 10, 'pbi': True, 'weight': 10},
-                  (1, 3, 0): {'length': 4, 'pbi': False, 'weight': 20},
-                  (2, 3, 0): {'length': 5, 'pbi': True, 'weight': 5}}
+    attributes = {(1, 2): {'length': 10, 'pbi': True, 'weight': 10},
+                  (1, 3): {'length': 4, 'pbi': False, 'weight': 20},
+                  (2, 3): {'length': 5, 'pbi': True, 'weight': 5}}
     nx.set_edge_attributes(G, attributes)
     return G
 
@@ -76,3 +76,11 @@ def create_penalty():
 
 def test_weigh_edges(create_graph_to_weigh, create_weighted_graph, create_penalty):
     assert graphs_equal(weigh_edges(create_graph_to_weigh, create_penalty), create_weighted_graph)
+
+@pytest.fixture
+def create_validation_contact_nodes():
+    contact_nodes = [1,3]
+    return contact_nodes
+
+def test_find_contact_nodes(create_weighted_graph, create_validation_contact_nodes):
+    assert find_contact_nodes(create_weighted_graph) == create_validation_contact_nodes
