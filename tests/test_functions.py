@@ -154,3 +154,16 @@ def create_validation_ebc():
 
 def test_compute_local_betweenness_centrality(create_graph_for_routing, create_betweenness_nodes, create_radius, create_validation_ebc):
     assert compute_local_betweenness_centrality(create_graph_for_routing, create_betweenness_nodes, create_radius) == create_validation_ebc
+
+@pytest.fixture
+def create_found_paths():
+    found_paths = [(1,3,4),(3,4)]
+    return found_paths
+
+@pytest.fixture
+def create_validation_bs():
+    validation_bs = [33.9,56.5]
+    return validation_bs
+
+def test_rank_gaps_by_b(create_found_paths, create_graph_for_routing, create_validation_ebc, create_validation_bs):
+    assert rank_gaps_by_b(create_found_paths, create_graph_for_routing, create_validation_ebc) == create_validation_bs
