@@ -1,5 +1,6 @@
 import yaml
 import networkx as nx
+import random
 
 def map_edges_to_bike_infrastructure(g):
     """
@@ -180,3 +181,49 @@ def find_actual_gaps(G, potential_gaps):
             found_gaps.append(gap)
             found_gaps_nsp.append(nodelist)
     return found_gaps, found_gaps_nsp
+
+def compute_local_betweenness_centrality(G, nodes_gdf, radius):
+    """
+    computes weighted betweenness centrality for paths within radius
+
+    Parameters
+    ----------
+    G: networkx.Graph
+        undirected simple graph representing the street network with weighted edges
+    nodes_gdf: geopandas.GeoDataFrame
+        all nodes in street network
+    radius: int
+        maximum length of path for betweennessn centrality calculation, set by user
+
+    Returns
+    -------
+    ebc: dict
+        local betweenness centrality values for all edges in network
+    """
+    # set current ebc value of all G edges to 0
+    for edge in G.edges:
+        G.edges[edge]["ebc"] = 0
+
+    # create dict that will be updated at each step
+    ebc = nx.get_edge_attributes(G, "ebc")
+
+    # for each node, compute "local" ebc (buffered with radius!)
+    # for comp feas, now only subset of randomly drawn 100 nodes
+    random.seed(1312)
+    random_nodes = random.choices(list(G.nodes), k=100)
+    for node in random_nodes:
+        node_buffer = nodes_gdf.loc[node, "geometry"].buffer(radius)
+        q = nodes_gdf.sindex.query(node_buffer, predicate="intersects")
+        neighbours = list(nodes_gdf.iloc[q].index)
+        local_ebc = nx.edge_betweenness_centrality_subset(
+            G=G,
+            sources=[node],
+            targets=neighbours,
+            normalized=False,  # important! otherwise the addition makes no sense
+            weight="weight"  # using penalty for non-pbi
+        )
+
+        # update ebc dictionary
+        for k, v in local_ebc.items():
+            ebc[k] += v  # updating ebc!!
+    return ebc

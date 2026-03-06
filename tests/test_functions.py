@@ -1,5 +1,4 @@
 import pytest
-import networkx as nx
 from networkx.utils.misc import graphs_equal
 import geopandas as gpd
 from shapely.geometry import Point
