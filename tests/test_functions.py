@@ -115,10 +115,10 @@ def test_find_potential_gaps(create_test_contact_nodes, create_maxgap, create_te
 def create_graph_for_routing():
     G = nx.Graph()
     G.add_edges_from([(1, 2), (1, 3), (2, 3), (3,4)])
-    attributes = {(1, 2): {'length': 10, 'pbi': True},
-                  (1, 3): {'length': 4, 'pbi': False},
-                  (2, 3): {'length': 5, 'pbi': True},
-                  (3, 4): {'length': 6, 'pbi': False}}
+    attributes = {(1, 2): {'length': 10, 'pbi': True, 'weight': 10},
+                  (1, 3): {'length': 4, 'pbi': False, 'weight': 20},
+                  (2, 3): {'length': 5, 'pbi': True, 'weight': 5},
+                  (3, 4): {'length': 6, 'pbi': False, 'weight': 30}}
     nx.set_edge_attributes(G, attributes)
     return G
 
@@ -134,3 +134,23 @@ def create_validation_found_gap_paths():
 
 def test_find_actual_gaps(create_graph_for_routing, create_potential_gaps, create_validation_found_gap_paths):
     assert find_actual_gaps(create_graph_for_routing, create_potential_gaps) == create_validation_found_gap_paths
+
+@pytest.fixture
+def create_betweenness_nodes():
+    nodes = {'osmid': [1, 2, 3, 4], 'geometry': [Point(1, 1), Point(5000, 5000), Point(3, 3), Point(1000, 1000)]}
+    nodes_gdf = gpd.GeoDataFrame(nodes)
+    nodes_gdf.set_index('osmid', inplace=True)
+    return nodes_gdf
+
+@pytest.fixture
+def create_radius():
+    radius = 2000
+    return radius
+
+@pytest.fixture
+def create_validation_ebc():
+    ebc = {(1,2):54.5, (1,3): 0, (2,3): 54.5, (3,4): 56.5}
+    return ebc
+
+def test_compute_local_betweenness_centrality(create_graph_for_routing, create_betweenness_nodes, create_radius, create_validation_ebc):
+    assert compute_local_betweenness_centrality(create_graph_for_routing, create_betweenness_nodes, create_radius) == create_validation_ebc
