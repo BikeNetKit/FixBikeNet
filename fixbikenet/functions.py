@@ -1,6 +1,7 @@
 import yaml
 import networkx as nx
 import random
+import numpy as np
 
 def map_edges_to_bike_infrastructure(g):
     """
@@ -227,3 +228,30 @@ def compute_local_betweenness_centrality(G, nodes_gdf, radius):
         for k, v in local_ebc.items():
             ebc[k] += v  # updating ebc!!
     return ebc
+
+def rank_gaps_by_b(found_gaps_nsp, G, ebc):
+    """
+    calculates b for all gaps
+
+    Parameters
+    ----------
+    found_gaps_nsp: list
+        list of paths in network for all gaps in protected bicycle network
+    G: networkx.Graph
+        undirected simple graph representing the street network with weighted edges
+    ebc: dict
+        local betweenness centrality values for all edges in network
+
+    Returns
+    -------
+    Bs: list
+        list of values of b for all gaps in protected bicycle network
+    """
+    Bs = []
+    for nodelist in found_gaps_nsp:
+        edgelist = [tuple(sorted(z)) for z in zip(nodelist, nodelist[1:])]
+        lengths = np.array([G.edges[edge]["length"] for edge in edgelist])
+        ebcs = np.array([ebc[edge] for edge in edgelist])
+        B = sum(lengths * ebcs) / sum(lengths)
+        Bs.append(B)
+    return Bs
