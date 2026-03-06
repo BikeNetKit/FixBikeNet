@@ -158,7 +158,7 @@ def find_actual_gaps(G, potential_gaps):
     found_gaps: list
         list of all gaps in protected bicycle network
     found_gaps_nsp: list
-        list of paths in network for all gaps in protected bicycle networ
+        list of paths in network for all gaps in protected bicycle network
     """
     pbi_dict = nx.get_edge_attributes(G, "pbi")
 

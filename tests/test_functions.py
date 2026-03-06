@@ -111,3 +111,27 @@ def create_validation_gaps():
 
 def test_find_potential_gaps(create_test_contact_nodes, create_maxgap, create_test_nodes_gdf, create_validation_gaps):
     assert find_potential_gaps(create_test_contact_nodes,create_test_nodes_gdf, create_maxgap) == create_validation_gaps
+
+@pytest.fixture
+def create_graph_for_routing():
+    G = nx.Graph()
+    G.add_edges_from([(1, 2), (1, 3), (2, 3), (3,4)])
+    attributes = {(1, 2): {'length': 10, 'pbi': True},
+                  (1, 3): {'length': 4, 'pbi': False},
+                  (2, 3): {'length': 5, 'pbi': True},
+                  (3, 4): {'length': 6, 'pbi': False}}
+    nx.set_edge_attributes(G, attributes)
+    return G
+
+@pytest.fixture
+def create_potential_gaps():
+    potential_gaps = [(1,4), (2,3), (3,4)]
+    return potential_gaps
+
+@pytest.fixture
+def create_validation_found_gap_paths():
+    found_gap_paths = ([(1,4), (3,4)], [[1,3,4],[3,4]])
+    return found_gap_paths
+
+def test_find_actual_gaps(create_graph_for_routing, create_potential_gaps, create_validation_found_gap_paths):
+    assert find_actual_gaps(create_graph_for_routing, create_potential_gaps) == create_validation_found_gap_paths
