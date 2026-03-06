@@ -1,4 +1,5 @@
 import yaml
+import networkx as nx
 
 def map_edges_to_bike_infrastructure(g):
     """
@@ -140,3 +141,42 @@ def find_potential_gaps(contact_nodes, nodes_gdf, maxgap):
     # ... so that we can easily deduplicate
     potential_gaps = list(set(potential_gaps))
     return potential_gaps
+
+def find_actual_gaps(G, potential_gaps):
+    """
+    determines which potential gaps are actual gaps by finding paths between all contact nodes and only keeping the gaps that have no protected bike infrastructure
+
+    Parameters
+    ----------
+    G: networkx.Graph
+        undirected simple graph representing the street network with weighted edges
+    potential_gaps: list
+        all unique potential gaps in protected bicycle network
+
+    Returns
+    -------
+    found_gaps: list
+        list of all gaps in protected bicycle network
+    found_gaps_nsp: list
+        list of paths in network for all gaps in protected bicycle networ
+    """
+    pbi_dict = nx.get_edge_attributes(G, "pbi")
+
+    found_gaps = []
+    found_gaps_nsp = []  # naive shortest paths (by length, in node list format)
+
+    for i, gap in enumerate(potential_gaps):
+        u, v = gap
+        nodelist = nx.shortest_path(
+            G=G,
+            source=u,
+            target=v,
+            weight="length"
+        )
+        pbis = set([pbi_dict[tuple(sorted(z))] for z in zip(nodelist, nodelist[1:])])
+
+        # confirm that it is an actual gap if it consists only of pbi==0 infra:
+        if pbis == set([0]):
+            found_gaps.append(gap)
+            found_gaps_nsp.append(nodelist)
+    return found_gaps, found_gaps_nsp
