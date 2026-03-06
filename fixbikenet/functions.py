@@ -107,3 +107,35 @@ def find_contact_nodes(G):
         if len(pbis) == 2:
             contact_nodes.append(node)
     return contact_nodes
+
+def find_potential_gaps(contact_nodes, nodes_gdf, maxgap):
+    """
+    finds potential gaps in protected bicycle network, corresponding to two contact nodes that are within maxgap euclidean distance of each other
+
+    Parameters
+    ----------
+    contact_nodes: list
+        list of all nodes that fulfill criteria to be a contact node
+    nodes_gdf: geopandas.GeoDataFrame
+        all nodes in street network
+    maxgap: int
+        user defined maximal euclidean distance between two contact nodes
+
+    Returns
+    -------
+    potential_gaps: list
+        all unique potential gaps in protected bicycle network
+    """
+    potential_gaps = []
+
+    for node in contact_nodes:
+        node_buffer = nodes_gdf.loc[node, "geometry"].buffer(maxgap)
+        q = nodes_gdf.sindex.query(node_buffer, predicate="intersects")
+        neighbours = list(nodes_gdf.iloc[q].index)
+        # convention: sort by ascending OSMID...
+        node_pairs = [tuple(sorted(z)) for z in zip([node] * len(neighbours), neighbours)]
+        potential_gaps += node_pairs
+
+    # ... so that we can easily deduplicate
+    potential_gaps = list(set(potential_gaps))
+    return potential_gaps
