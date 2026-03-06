@@ -132,6 +132,7 @@ def find_potential_gaps(contact_nodes, nodes_gdf, maxgap):
         node_buffer = nodes_gdf.loc[node, "geometry"].buffer(maxgap)
         q = nodes_gdf.sindex.query(node_buffer, predicate="intersects")
         neighbours = list(nodes_gdf.iloc[q].index)
+        neighbours.remove(node)
         # convention: sort by ascending OSMID...
         node_pairs = [tuple(sorted(z)) for z in zip([node] * len(neighbours), neighbours)]
         potential_gaps += node_pairs

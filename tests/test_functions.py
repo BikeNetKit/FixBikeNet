@@ -1,6 +1,8 @@
 import pytest
 import networkx as nx
 from networkx.utils.misc import graphs_equal
+import geopandas as gpd
+from shapely.geometry import Point
 
 from fixbikenet.functions import *
 
@@ -84,3 +86,28 @@ def create_validation_contact_nodes():
 
 def test_find_contact_nodes(create_weighted_graph, create_validation_contact_nodes):
     assert find_contact_nodes(create_weighted_graph) == create_validation_contact_nodes
+
+@pytest.fixture
+def create_test_contact_nodes():
+    contact_nodes = [1,3,4]
+    return contact_nodes
+
+@pytest.fixture
+def create_maxgap():
+    maxgap = 50
+    return maxgap
+
+@pytest.fixture
+def create_test_nodes_gdf():
+    nodes ={'osmid':[1,2,3,4],'geometry':[Point(1,1), Point(1000,1000), Point(3,3), Point(2000,2000)]}
+    nodes_gdf = gpd.GeoDataFrame(nodes)
+    nodes_gdf.set_index('osmid',inplace=True)
+    return nodes_gdf
+
+@pytest.fixture
+def create_validation_gaps():
+    gaps = [(1,3)]
+    return gaps
+
+def test_find_potential_gaps(create_test_contact_nodes, create_maxgap, create_test_nodes_gdf, create_validation_gaps):
+    assert find_potential_gaps(create_test_contact_nodes,create_test_nodes_gdf, create_maxgap) == create_validation_gaps
