@@ -1,4 +1,7 @@
 import yaml
+import networkx as nx
+import random
+import numpy as np
 
 def map_edges_to_bike_infrastructure(g):
     """
@@ -107,3 +110,148 @@ def find_contact_nodes(G):
         if len(pbis) == 2:
             contact_nodes.append(node)
     return contact_nodes
+
+def find_potential_gaps(contact_nodes, nodes_gdf, maxgap):
+    """
+    finds potential gaps in protected bicycle network, corresponding to two contact nodes that are within maxgap euclidean distance of each other
+
+    Parameters
+    ----------
+    contact_nodes: list
+        list of all nodes that fulfill criteria to be a contact node
+    nodes_gdf: geopandas.GeoDataFrame
+        all nodes in street network
+    maxgap: int
+        user defined maximal euclidean distance between two contact nodes
+
+    Returns
+    -------
+    potential_gaps: list
+        all unique potential gaps in protected bicycle network
+    """
+    potential_gaps = []
+
+    for node in contact_nodes:
+        node_buffer = nodes_gdf.loc[node, "geometry"].buffer(maxgap)
+        q = nodes_gdf.sindex.query(node_buffer, predicate="intersects")
+        neighbours = list(nodes_gdf.iloc[q].index)
+        neighbours.remove(node)
+        # convention: sort by ascending OSMID...
+        node_pairs = [tuple(sorted(z)) for z in zip([node] * len(neighbours), neighbours)]
+        potential_gaps += node_pairs
+
+    # ... so that we can easily deduplicate
+    potential_gaps = list(set(potential_gaps))
+    return potential_gaps
+
+def find_actual_gaps(G, potential_gaps):
+    """
+    determines which potential gaps are actual gaps by finding paths between all contact nodes and only keeping the gaps that have no protected bike infrastructure
+
+    Parameters
+    ----------
+    G: networkx.Graph
+        undirected simple graph representing the street network with weighted edges
+    potential_gaps: list
+        all unique potential gaps in protected bicycle network
+
+    Returns
+    -------
+    found_gaps: list
+        list of all gaps in protected bicycle network
+    found_gaps_nsp: list
+        list of paths in network for all gaps in protected bicycle network
+    """
+    pbi_dict = nx.get_edge_attributes(G, "pbi")
+
+    found_gaps = []
+    found_gaps_nsp = []  # naive shortest paths (by length, in node list format)
+
+    for i, gap in enumerate(potential_gaps):
+        u, v = gap
+        nodelist = nx.shortest_path(
+            G=G,
+            source=u,
+            target=v,
+            weight="length"
+        )
+        pbis = set([pbi_dict[tuple(sorted(z))] for z in zip(nodelist, nodelist[1:])])
+
+        # confirm that it is an actual gap if it consists only of pbi==0 infra:
+        if pbis == set([0]):
+            found_gaps.append(gap)
+            found_gaps_nsp.append(nodelist)
+    return found_gaps, found_gaps_nsp
+
+def compute_local_betweenness_centrality(G, nodes_gdf, radius):
+    """
+    computes weighted betweenness centrality for paths within radius
+
+    Parameters
+    ----------
+    G: networkx.Graph
+        undirected simple graph representing the street network with weighted edges
+    nodes_gdf: geopandas.GeoDataFrame
+        all nodes in street network
+    radius: int
+        maximum length of path for betweennessn centrality calculation, set by user
+
+    Returns
+    -------
+    ebc: dict
+        local betweenness centrality values for all edges in network
+    """
+    # set current ebc value of all G edges to 0
+    for edge in G.edges:
+        G.edges[edge]["ebc"] = 0
+
+    # create dict that will be updated at each step
+    ebc = nx.get_edge_attributes(G, "ebc")
+
+    # for each node, compute "local" ebc (buffered with radius!)
+    # for comp feas, now only subset of randomly drawn 100 nodes
+    random.seed(1312)
+    random_nodes = random.choices(list(G.nodes), k=100)
+    for node in random_nodes:
+        node_buffer = nodes_gdf.loc[node, "geometry"].buffer(radius)
+        q = nodes_gdf.sindex.query(node_buffer, predicate="intersects")
+        neighbours = list(nodes_gdf.iloc[q].index)
+        local_ebc = nx.edge_betweenness_centrality_subset(
+            G=G,
+            sources=[node],
+            targets=neighbours,
+            normalized=False,  # important! otherwise the addition makes no sense
+            weight="weight"  # using penalty for non-pbi
+        )
+
+        # update ebc dictionary
+        for k, v in local_ebc.items():
+            ebc[k] += v  # updating ebc!!
+    return ebc
+
+def rank_gaps_by_b(found_gaps_nsp, G, ebc):
+    """
+    calculates b for all gaps
+
+    Parameters
+    ----------
+    found_gaps_nsp: list
+        list of paths in network for all gaps in protected bicycle network
+    G: networkx.Graph
+        undirected simple graph representing the street network with weighted edges
+    ebc: dict
+        local betweenness centrality values for all edges in network
+
+    Returns
+    -------
+    Bs: list
+        list of values of b for all gaps in protected bicycle network
+    """
+    Bs = []
+    for nodelist in found_gaps_nsp:
+        edgelist = [tuple(sorted(z)) for z in zip(nodelist, nodelist[1:])]
+        lengths = np.array([G.edges[edge]["length"] for edge in edgelist])
+        ebcs = np.array([ebc[edge] for edge in edgelist])
+        B = sum(lengths * ebcs) / sum(lengths)
+        Bs.append(B)
+    return Bs
