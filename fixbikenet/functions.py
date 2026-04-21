@@ -29,6 +29,32 @@ def map_edges_to_bike_infrastructure(g):
         ]
     return g
 
+def bike_infra_mapping_gdf(g, edges_gdf):
+    """
+    add binary edge attribute pbi to edges_gdf
+
+    Parameters
+    ----------
+    g : networkx.MultiDiGraph
+        simplified graph representing the street network, with added binary edge attribute "pbi"
+    edges_gdf: geopandas.GeoDataFrame
+        edges representing the street network
+
+    Returns
+    -------
+    edges_gdf: geopandas.GeoDataFrame
+        edges representing the street network with added binary attribute "pbi"
+    """
+    # Build dict of edge attribute
+    attr_dict = {
+        (u, v, k): data['pbi']
+        for u, v, k, data in g.edges(keys=True, data=True)
+    }
+
+    # Map to GeoDataFrame
+    edges_gdf['pbi'] = edges_gdf.index.map(attr_dict)
+    return edges_gdf
+
 def find_edges_to_drop(g):
     """
     find parallel edges that have different pbi values, list the ones with pbi=0
