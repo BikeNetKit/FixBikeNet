@@ -2,6 +2,8 @@ import yaml
 import networkx as nx
 import random
 import numpy as np
+import geopandas as gpd
+from shapely.geometry import LineString
 
 def map_edges_to_bike_infrastructure(g):
     """
@@ -281,3 +283,53 @@ def rank_gaps_by_b(found_gaps_nsp, G, ebc):
         B = sum(lengths * ebcs) / sum(lengths)
         Bs.append(B)
     return Bs
+
+def get_correct_edgetuples(edge_gdf, nodelist):
+    """
+    helper function that maps a node list (output of nx.shortest_paths)
+    to the correct set of edge tuples that can be used for INDEXING THE EDGE GDF
+
+    Parameters
+    ----------
+    edge_gdf: geopandas.geodataframe.GeoDataFrame
+        The street network, in a projected coordinate reference system
+    nodelist: list
+        A list of nodes that make up source and targets of edges
+
+    Returns
+    -------
+    edgelist_final: list
+        List of edge tuples that can be used for INDEXING THE EDGE GDF
+    """
+    edgelist_prelim = zip(nodelist, nodelist[1:])
+    edgelist_final = []
+    for edge_prelim in edgelist_prelim:
+        if edge_prelim in edge_gdf.index:
+            edgelist_final.append(edge_prelim)
+        else:
+            edgelist_final.append(tuple([edge_prelim[1], edge_prelim[0]]))
+    return edgelist_final
+
+def create_gdf_with_geoms(df, edges):
+    """
+    Parameters
+    ----------
+    df: pandas.DataFrame
+        Dataframe with path nodes and path edges
+    edges: geopandas.GeoDataFrame
+        The street network, in a projected coordinate reference system
+
+    Returns
+    -------
+    gdf: geopandas.GeoDataFrame
+        projected GeoDataFrame with path nodes and path edges and merged geometries
+    """
+    # get geometry by merging all geoms from edge gdf
+    df["geometry"] = df.edge_list.apply(
+        lambda x: edges.loc[x].geometry.union_all()
+    )
+    # convert edges into a gdf
+    gdf = gpd.GeoDataFrame(df, crs=edges.crs, geometry="geometry")
+    # merge multilinestring into linestring where possible (should be possible everywhere)
+    gdf["geometry"] = gdf.line_merge()
+    return gdf
