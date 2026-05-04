@@ -3,7 +3,6 @@ import networkx as nx
 import random
 import numpy as np
 import geopandas as gpd
-from shapely.geometry import LineString
 
 def map_edges_to_bike_infrastructure(g):
     """
@@ -174,41 +173,51 @@ def find_potential_gaps(contact_nodes, nodes_gdf, maxgap):
 
 def find_actual_gaps(G, potential_gaps):
     """
-    determines which potential gaps are actual gaps by finding paths between all contact nodes and only keeping the gaps that have no protected bike infrastructure
+        determines which potential gaps are actual gaps by finding paths between all contact nodes and only keeping the gaps that have no protected bike infrastructure
 
-    Parameters
-    ----------
-    G: networkx.Graph
-        undirected simple graph representing the street network with weighted edges
-    potential_gaps: list
-        all unique potential gaps in protected bicycle network
+        Parameters
+        ----------
+        G: networkx.Graph
+            undirected simple graph representing the street network with weighted edges
+        potential_gaps: list
+            all unique potential gaps in protected bicycle network
 
-    Returns
-    -------
-    found_gaps: list
-        list of all gaps in protected bicycle network
-    found_gaps_nsp: list
-        list of paths in network for all gaps in protected bicycle network
-    """
+        Returns
+        -------
+        found_gaps: list
+            list of all gaps in protected bicycle network
+        found_gaps_nsp: list
+            list of paths in network for all gaps in protected bicycle network
+        """
     pbi_dict = nx.get_edge_attributes(G, "pbi")
 
     found_gaps = []
-    found_gaps_nsp = []  # naive shortest paths (by length, in node list format)
+    found_gaps_nsp = []
 
-    for i, gap in enumerate(potential_gaps):
-        u, v = gap
-        nodelist = nx.shortest_path(
-            G=G,
-            source=u,
-            target=v,
-            weight="length"
-        )
-        pbis = set([pbi_dict[tuple(sorted(z))] for z in zip(nodelist, nodelist[1:])])
+    for u, v in potential_gaps:
 
-        # confirm that it is an actual gap if it consists only of pbi==0 infra:
-        if pbis == set([0]):
-            found_gaps.append(gap)
+        try:
+            nodelist = nx.shortest_path(G, u, v, weight="length")
+        except nx.NetworkXNoPath:
+            continue
+
+        # assume valid until proven otherwise
+        valid = True
+
+        for i in range(len(nodelist) - 1):
+            a, b = nodelist[i], nodelist[i + 1]
+
+            # undirected edge normalization (ONLY once per lookup)
+            key = (a, b) if (a, b) in pbi_dict else (b, a)
+
+            if pbi_dict.get(key, 1) != 0:
+                valid = False
+                break
+
+        if valid:
+            found_gaps.append((u, v))
             found_gaps_nsp.append(nodelist)
+
     return found_gaps, found_gaps_nsp
 
 def compute_local_betweenness_centrality(G, nodes_gdf, radius):
@@ -237,9 +246,9 @@ def compute_local_betweenness_centrality(G, nodes_gdf, radius):
     ebc = nx.get_edge_attributes(G, "ebc")
 
     # for each node, compute "local" ebc (buffered with radius!)
-    # for comp feas, now only subset of randomly drawn 100 nodes
+    # for comp feas, now only subset of randomly drawn 300 nodes
     random.seed(1312)
-    random_nodes = random.choices(list(G.nodes), k=100)
+    random_nodes = random.choices(list(G.nodes), k=300)
     for node in random_nodes:
         node_buffer = nodes_gdf.loc[node, "geometry"].buffer(radius)
         q = nodes_gdf.sindex.query(node_buffer, predicate="intersects")
