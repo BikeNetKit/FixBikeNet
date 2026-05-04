@@ -8,8 +8,8 @@ from fixbikenet.functions import *
 def fixbikenet(
     city_name,
     proj_crs = "3857",
-    radius = 2000,
-    maxgap = 50,
+    radius = 2500,
+    maxgap = 200,
     penalty = {0: 5, 1: 1},
 ):
     """
@@ -20,7 +20,7 @@ def fixbikenet(
         name of the city that the analysis should be performed on
     proj_crs : str, default '3857'
         coordinate reference system that is used to project osm data. Default is '3857' (WGS 84 / Pseudo-Mercator)
-    radius : int, default 2000
+    radius : int, default 2500
         cut-off length for computation of local betweenness centrality, in meters
     maxgap : int, default 50
         maximum distance between node pairs to be considered as a potential gap
@@ -113,7 +113,7 @@ def fixbikenet(
     df = df.sort_values(by="B", ascending=False).reset_index(drop=True)
 
     # only keep the 100 most important gaps. If there are fewer than 100 gaps keep only those
-    if df.length > 100:
+    if df.shape[0] > 100:
         df = df.iloc[:100]
 
     # assign source and target nodes for each gap
