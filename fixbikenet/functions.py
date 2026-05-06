@@ -312,8 +312,9 @@ def get_correct_edgetuples(edge_gdf, nodelist):
     """
     edgelist_prelim = zip(nodelist, nodelist[1:])
     edgelist_final = []
+    temp_gdf = edge_gdf.sort_index() # To circumvent PerformanceWarning, see https://stackoverflow.com/questions/54307300/what-causes-indexing-past-lexsort-depth-warning-in-pandas
     for edge_prelim in edgelist_prelim:
-        if edge_prelim in edge_gdf.index:
+        if edge_prelim in temp_gdf.index:
             edgelist_final.append(edge_prelim)
         else:
             edgelist_final.append(tuple([edge_prelim[1], edge_prelim[0]]))
