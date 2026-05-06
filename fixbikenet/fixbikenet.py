@@ -2,6 +2,7 @@
 import pandas as pd
 import osmnx as ox
 import os
+import matplotlib.pyplot as plt
 
 # import functions
 from fixbikenet.functions import *
@@ -14,6 +15,7 @@ def fixbikenet(
     penalty = {0: 5, 1: 1},
     export_data = True,
     export_file_format="geojson",
+    export_plot=False,
 ):
     """
     Finds gaps in bicycle networks and returns the 100 that are the most important to fill.
@@ -33,6 +35,8 @@ def fixbikenet(
         If set to True, data will be saved to a file. The filename is [slug].gpkg, where slug is a string id made out of city_name
     export_file_format : str, optional, default "geojson"
         File format for the data export, relevant if export_data set to True. Default "geojson", also possible "gpkg". If exporting as geojson, generates extra files for street network and city boundary. If exporting as gkpg, these are added all in one file as extra layers.
+    export_plot : bool, optional, default False
+        If set to True, plot will be saved to a file
     Returns
     -------
     gdf : geopandas.geodataframe.GeoDataFrame
@@ -165,5 +169,15 @@ def fixbikenet(
             gdf.to_file("./results/"+export_data_filename, driver="GPKG", layer="Identified gaps")
             edges_gdf.to_file("./results/"+export_data_filename, driver="GPKG", layer="Street network", append=True)
             city_boundary.to_file("./results/"+export_data_filename, driver="GPKG", layer="City boundary", append=True)
+
+        if export_plot:
+            print("Saving plot..")
+            os.makedirs("./results/plots/", exist_ok=True)
+            fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+            edges_gdf.plot(ax=ax, color="grey")
+            gdf.plot(ax=ax, color="red")
+            ax.set_axis_off()
+            fig.savefig(f"./results/plots/"+export_data_filename+".png", dpi=150, bbox_inches='tight')
+            plt.close()
 
     return gdf
