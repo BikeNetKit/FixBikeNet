@@ -1,6 +1,7 @@
 # import packages
 import pandas as pd
 import osmnx as ox
+import os
 
 # import functions
 from fixbikenet.functions import *
@@ -11,6 +12,8 @@ def fixbikenet(
     radius = 2500,
     maxgap = 200,
     penalty = {0: 5, 1: 1},
+    export_data = True,
+    export_file_format="geojson",
 ):
     """
     Finds gaps in bicycle networks and returns the 100 that are the most important to fill.
@@ -26,7 +29,10 @@ def fixbikenet(
         maximum distance between node pairs to be considered as a potential gap
     penalty : dict, default {0:5, 1: 1}
         weighing for shortest path calculations, where streets without protected bike infrastructure (pbi) get penalized
-
+    export_data : bool, optional, default True
+        If set to True, data will be saved to a file. The filename is [slug].gpkg, where slug is a string id made out of city_name
+    export_file_format : str, optional, default "geojson"
+        File format for the data export, relevant if export_data set to True. Default "geojson", also possible "gpkg". If exporting as geojson, generates extra files for street network and city boundary. If exporting as gkpg, these are added all in one file as extra layers.
     Returns
     -------
     gdf : geopandas.geodataframe.GeoDataFrame
@@ -45,6 +51,10 @@ def fixbikenet(
         raise TypeError("radius must be an integer")
     if type(maxgap) != int:
         raise TypeError("maxgap must be an integer")
+    if type(export_data) is not bool:
+        raise TypeError("export_data must be a boolean")
+    if export_file_format != "geojson" and export_file_format != "gpkg":
+        raise ValueError("export_file_format must be 'geojson' or 'gpkg'")
 
     ### downloading and preprocessing data from OSM
     print("Downloading OSM data..")
@@ -129,6 +139,31 @@ def fixbikenet(
     # add actual geometries in network to each gap
     gdf = create_gdf_with_geoms(df, edges_gdf)
 
-    gdf.to_file("gaps.gpkg", driver="GPKG")
+    # Generate export data filename
+    if export_data:
+        os.makedirs("./results/", exist_ok=True)
+        export_data_filename = (
+                city_name + "-" + export_file_format
+        )
+
+    if export_data:
+        ### save data
+        print("Saving data..")
+        edges_gdf.drop(["osmid"], axis=1, inplace=True)
+        city_boundary = ox.geocoder.geocode_to_gdf(city_name)
+        city_boundary.to_crs(epsg=proj_crs, inplace=True)
+        # We have meter precision, so rounding to integers is fine. Better would be to
+        # change dtypes to int, but this does not seem possible without manual looping.
+        city_boundary.geometry = city_boundary.geometry.set_precision(grid_size=1)
+        edges_gdf.geometry = edges_gdf.geometry.set_precision(grid_size=1)
+        gdf.geometry = gdf.geometry.set_precision(grid_size=1)
+        if export_file_format == "geojson":
+            gdf.to_file("./results/"+export_data_filename, driver="GeoJSON")
+            edges_gdf.to_file("./results/"+city_name+"-street_network.geojson", driver="GeoJSON")
+            city_boundary.to_file("./results/"+city_name+"-city_boundary.geojson", driver="GeoJSON")
+        elif export_file_format == "gpkg":
+            gdf.to_file("./results/"+export_data_filename, driver="GPKG", layer="Identified gaps")
+            edges_gdf.to_file("./results/"+export_data_filename, driver="GPKG", layer="Street network", append=True)
+            city_boundary.to_file("./results/"+export_data_filename, driver="GPKG", layer="City boundary", append=True)
 
     return gdf
