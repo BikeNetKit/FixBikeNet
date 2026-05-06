@@ -147,7 +147,7 @@ def fixbikenet(
     if export_data:
         os.makedirs("./results/", exist_ok=True)
         export_data_filename = (
-                city_name + "-" + export_file_format
+                city_name + "." + export_file_format
         )
 
     if export_data:
