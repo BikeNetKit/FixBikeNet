@@ -1,4 +1,4 @@
-name: fbnenv
+name: fbnenvdev
 channels:
   - conda-forge
 dependencies:
