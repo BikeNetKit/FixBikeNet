@@ -90,11 +90,11 @@ def fixbikenet(
     g = map_edges_to_bike_infrastructure(g)
     edges_gdf = bike_infra_mapping_gdf(g, edges_gdf)
 
-    print("Checking for parallel edges to drop...")
+    print("Dropping parallel edges..")
     edges_to_drop = find_edges_to_drop(g)
     g.remove_edges_from(edges_to_drop)
-    print("Edges dropped")
 
+    print("Detecting gaps..")
     # Capital-G: the Graph() object we will be working with from now on
     G = nx.Graph(g)
 
@@ -111,9 +111,10 @@ def fixbikenet(
     found_gaps, found_gaps_nsp = find_actual_gaps(G, potential_gaps)
 
     # calculating local betweenness score dependent on radius
-    print("Calculating local betweenness centrality..")
+    print("Calculating betweenness centrality..")
     ebc = compute_local_betweenness_centrality(G, nodes_gdf, radius)
 
+    print("Ranking gaps..")
     # calculate parameter B for all gaps, used for deciding which gaps are most important
     Bs = rank_gaps_by_b(found_gaps_nsp, G, ebc)
 
