@@ -20,14 +20,17 @@ def map_edges_to_bike_infrastructure(g):
     """
     # first step: map all highway attributes
     protected_bike_infra = yaml.load(
-        open("./config/config_osm.yml"),
+        open("fixbikenet/config/config_osm.yml"),
         Loader=yaml.FullLoader)["protected_bike_infra"]
 
     # add binary edge attribute "pbi" (protected bike infra: True/False)
     for edge in g.edges(keys=True):
-        g.edges[edge]["pbi"] = protected_bike_infra[
-            g.edges[edge]["highway"]
-        ]
+        try:
+            g.edges[edge]["pbi"] = protected_bike_infra[
+                g.edges[edge]["highway"]
+            ]
+        except:
+            g.edges[edge]["pbi"] = 0
     return g
 
 def bike_infra_mapping_gdf(g, edges_gdf):
