@@ -1,8 +1,8 @@
-import yaml
 import networkx as nx
 import random
 import numpy as np
 import geopandas as gpd
+from . import config
 
 def map_edges_to_bike_infrastructure(g):
     """
@@ -18,15 +18,11 @@ def map_edges_to_bike_infrastructure(g):
     g : networkx.MultiDiGraph
         simplified graph representing the street network, with added binary edge attribute "pbi"
     """
-    # first step: map all highway attributes
-    protected_bike_infra = yaml.load(
-        open("fixbikenet/config/config_osm.yml"),
-        Loader=yaml.FullLoader)["protected_bike_infra"]
 
     # add binary edge attribute "pbi" (protected bike infra: True/False)
     for edge in g.edges(keys=True):
         try:
-            g.edges[edge]["pbi"] = protected_bike_infra[
+            g.edges[edge]["pbi"] = config.protected_bike_infra[
                 g.edges[edge]["highway"]
             ]
         except:

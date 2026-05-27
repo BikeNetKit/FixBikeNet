@@ -9,8 +9,8 @@ authors:
 - family-names: "Szell"
   given-names: "Michael"
 title: "FixBikeNet"
-version: 0.5.0
-date-released: 2026-05-06
+version: 0.6.0
+date-released: 2026-05-27
 url: "https://github.com/BikeNetKit/FixBikeNet"
 preferred-citation:
   type: article

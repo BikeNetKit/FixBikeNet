@@ -19,7 +19,7 @@ The software downloads and pre-processes data from OpenStreetMap, identifies the
 ### The easy way
 
 > [!IMPORTANT]  
-> As of 2026-05-06, the conda-forge installation is not yet working. We will remove this note once it works.
+> As of 2026-05-27, the conda-forge installation is not yet working. We will remove this note once it works.
 
 The best way to install FixBikeNet is using [`conda`](https://docs.conda.io/projects/conda/en/latest/index.html) and the `conda-forge` channel:
 
