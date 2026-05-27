@@ -1,6 +1,7 @@
 import contextlib
 from importlib.metadata import PackageNotFoundError, version
 
+from . import config
 from . import functions
 from fixbikenet.fixbikenet import fixbikenet
 
