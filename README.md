@@ -138,21 +138,12 @@ We provide a minimum working example in two formats:
 - Python script ([examples/mwe.py](examples/mwe.py))
 - Jupyter notebook ([examples/mwe.ipynb](examples/mwe.ipynb))
 
-## Repository structure
+## Docs
+Our documentation is in development. Stay tuned.
 
-```
-├── fixbikenet             <- Packaged functions and visualizations
-├── tests                   <- Tests to execute to ensure functionality
-├── .gitignore              <- Files and folders ignored by git
-├── .pre-commit-config.yaml <- Pre-commit hooks used
-├── README.md
-├── environment.yml         <- Environment file to set up the environment using conda/mamba/pixi
-```
 
-## Credits
+## Supported by
+Development of BikeNetKit/FixBikeNet was supported by the [Innovation Fund Denmark](https://innovationsfonden.dk/en) and the EU HORIZON project [JUST STREETS](https://www.just-streets.eu).
 
-<!--Please cite as:
->AUTHOR1, AUTHOR2, and AUTHOR3, PROJECTNAME, JOURNAL (YYYY), DOIURL
--->
 
-Development of FixBikeNet was supported by the Danish Innovation Fund (Innovationsfonden).
+[![Innovation Fund Denmark](https://raw.githubusercontent.com/BikeNetKit/.github/refs/heads/main/profile/_static/logo_innovationfund.png)](https://innovationsfonden.dk/en) &emsp;&emsp; [![European Union](https://raw.githubusercontent.com/BikeNetKit/.github/refs/heads/main/profile/_static/logo_eu.png)](https://commission.europa.eu/index_en) &ensp; [![JUST STREETS](https://raw.githubusercontent.com/BikeNetKit/.github/refs/heads/main/profile/_static/logo_juststreets.png)](https://www.just-streets.eu/) 
