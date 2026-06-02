@@ -17,119 +17,25 @@ The software downloads and pre-processes data from OpenStreetMap, identifies the
 
 ### The easy way
 
-> [!IMPORTANT]  
-> As of 2026-05-27, the conda-forge installation is not yet working. We will remove this note once it works.
+The currently default way to install FixBikeNet is using pip:
+
+```
+pip install fixbikenet
+```
+
+<!-- > [!IMPORTANT]  
+> As of 2026-05-04, the conda-forge installation is not yet working. We will remove this note once it works.
 
 The best way to install FixBikeNet is using [`conda`](https://docs.conda.io/projects/conda/en/latest/index.html) and the `conda-forge` channel:
 
 ```
 conda install -c conda-forge fixbikenet
-```
+``` -->
 
-### Advanced installations
-#### Set up environment
+If this does not work, consult our [installation docs](https://bikenetkit.github.io/FixBikeNet/installation/).
 
-The main step is to set up a virtual environment `fbnenv` in which to install the package, and then to use or run the environment.
-
-##### With Pixi
-
-Installation with [`Pixi`](https://pixi.prefix.dev/latest/) is fastest and most stable:
-
-```
-pixi init fbnenv
-pixi add --pypi fixbikenet
-```
-
-At this point you can run fixbikenet in the environment, for example as such:
-
-```
-pixi run python examples/mwe.py
-```
-
-> [!NOTE]  
-> The first time you run code with Pixi, it might take a minute longer, as Pixi resolves the environment's dependencies only at this point.
-
-_Alternatively_, or if you run into issues, [clone this repository](https://github.com/BikeNetKit/fixbikenet/archive/refs/heads/main.zip) and create the environment via the [`environment.yml`](environment.yml) file:
-
-```
-pixi init --import environment.yml
-```
-
-##### With mamba/conda/pip
-
-Alternatively to Pixi, use [`mamba`](https://mamba.readthedocs.io/en/latest/index.html) or [`conda`](https://docs.conda.io/projects/conda/en/latest/index.html).
-
-<details><summary>Instructions</summary>
-
-> [!IMPORTANT]  
-> As of 2026-05-06, the conda-forge installation is not yet working. We will remove this note once it works.
-
-```
-mamba create -n fbnenv -c conda-forge fixbikenet
-mamba activate fbnenv
-```
-
-_Alternatively_, or if you run into issues, [clone this repository](https://github.com/BikeNetKit/fixbikenet/archive/refs/heads/main.zip) and create the environment via the [`environment.yml`](environment.yml) file:
-
-```
-mamba env create --file environment.yml
-mamba activate fbnenv
-pip install fixbikenet
-```
-
-</details>
-
-### Run fixbikenet in Jupyter lab
-
-After having set up the environment above, if you wish to run fixbikenet via [JupyterLab](https://pypi.org/project/jupyterlab/), follow the
-
-<details><summary>Instructions</summary>
-
-#### With Pixi
-Running fixbikenet in Jupter lab with [`Pixi`](https://pixi.prefix.dev/latest/) is straightforward:
-
-```
-pixi run jupyter lab
-```
-
-An instance of Jupyter lab is automatically going to open in your browser after the environment is built.
-
-#### With mamba/conda
-
-Using mamba/conda, run:
-
-```
-mamba activate fbnenv
-ipython kernel install --user --name=fbnenv
-mamba deactivate
-jupyter lab
-```
-
-Once Jupyter lab opens, switch the kernel (Kernel > Change Kernel > fbnenv)
-
-#### With pip
-
-Using pip, run:
-
-```
-pip install --user ipykernel
-python -m ipykernel install --user --name=fbnenv
-jupyter lab
-```
-
-Once Jupyter lab opens, switch the kernel (Kernel > Change Kernel > fbnenv)
-
-</details>
-
-## Development installation
-
-If you want to develop the project, [clone this repository](https://github.com/BikeNetKit/fixbikenet/archive/refs/heads/main.zip) and create the environment via the [`environment-dev.yml`](environment-dev.yml) file:
-
-```
-pixi init --import environment-dev.yml
-```
-
-The developemt environment is called `fbnenvdev`. Make sure to also read [our contribution guidelines](https://github.com/BikeNetKit/FixBikeNet?tab=contributing-ov-file).
+### Advanced and development installations
+ See our [installation docs](https://bikenetkit.github.io/FixBikeNet/installation/) for details.
 
 ## Usage
 
@@ -139,7 +45,7 @@ We provide a minimum working example in two formats:
 - Jupyter notebook ([examples/mwe.ipynb](examples/mwe.ipynb))
 
 ## Docs
-Our documentation is in development. Stay tuned.
+Find more information in our docs: [https://bikenetkit.github.io/FixBikeNet/](https://bikenetkit.github.io/FixBikeNet/)
 
 
 ## Supported by
