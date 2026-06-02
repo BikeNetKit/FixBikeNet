@@ -7,6 +7,7 @@ dependencies:
   - jupyterlab
   - ipywidgets
   - ipykernel
+  - matplotlib
   - geopandas>=0.14
   - osmnx>=1.9.4
   - pip
