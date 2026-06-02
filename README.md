@@ -1,9 +1,10 @@
 # Bike Net Kit / Fix Bike Net
 
-<!--[![Docs](https://github.com/BikeNetKit/FixBikeNet/actions/workflows/docs.yml/badge.svg)](https://bikenetkit.github.io/FixBikeNet/)-->
+[![Docs](https://github.com/BikeNetKit/FixBikeNet/actions/workflows/docs.yml/badge.svg)](https://bikenetkit.github.io/FixBikeNet/)
 [![Test](https://github.com/BikeNetKit/FixBikeNet/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/BikeNetKit/FixBikeNet/actions/workflows/test.yml)
 [![PyPI - Version](https://img.shields.io/pypi/v/fixbikenet)](https://pypi.org/project/FixBikeNet/)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+![Human created](https://raw.githubusercontent.com/BikeNetKit/.github/refs/heads/main/profile/_static/badge_humancreated.svg)
 
 The Python package `fixbikenet` identifies the most important gaps to fill in a city's bicycle network. 
 
