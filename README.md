@@ -1,10 +1,10 @@
 # Bike Net Kit / Fix Bike Net
 
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
-[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
-[![Docs](https://github.com/BikeNetKit/FixBikeNet/actions/workflows/docs.yml/badge.svg)](https://github.com/BikeNetKit/FixBikeNet/actions/workflows/docs.yml)
+[![Docs](https://github.com/BikeNetKit/FixBikeNet/actions/workflows/docs.yml/badge.svg)](https://bikenetkit.github.io/FixBikeNet/)
 [![Test](https://github.com/BikeNetKit/FixBikeNet/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/BikeNetKit/FixBikeNet/actions/workflows/test.yml)
+[![PyPI - Version](https://img.shields.io/pypi/v/fixbikenet)](https://pypi.org/project/FixBikeNet/)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+![Human created](https://raw.githubusercontent.com/BikeNetKit/.github/refs/heads/main/profile/_static/badge_humancreated.svg)
 
 The Python package `fixbikenet` identifies the most important gaps to fill in a city's bicycle network. 
 
@@ -18,119 +18,25 @@ The software downloads and pre-processes data from OpenStreetMap, identifies the
 
 ### The easy way
 
-> [!IMPORTANT]  
-> As of 2026-05-27, the conda-forge installation is not yet working. We will remove this note once it works.
+The currently default way to install FixBikeNet is using pip:
+
+```
+pip install fixbikenet
+```
+
+<!-- > [!IMPORTANT]  
+> As of 2026-05-04, the conda-forge installation is not yet working. We will remove this note once it works.
 
 The best way to install FixBikeNet is using [`conda`](https://docs.conda.io/projects/conda/en/latest/index.html) and the `conda-forge` channel:
 
 ```
 conda install -c conda-forge fixbikenet
-```
+``` -->
 
-### Advanced installations
-#### Set up environment
+If this does not work, consult our [installation docs](https://bikenetkit.github.io/FixBikeNet/installation/).
 
-The main step is to set up a virtual environment `fbnenv` in which to install the package, and then to use or run the environment.
-
-##### With Pixi
-
-Installation with [`Pixi`](https://pixi.prefix.dev/latest/) is fastest and most stable:
-
-```
-pixi init fbnenv
-pixi add --pypi fixbikenet
-```
-
-At this point you can run fixbikenet in the environment, for example as such:
-
-```
-pixi run python examples/mwe.py
-```
-
-> [!NOTE]  
-> The first time you run code with Pixi, it might take a minute longer, as Pixi resolves the environment's dependencies only at this point.
-
-_Alternatively_, or if you run into issues, [clone this repository](https://github.com/BikeNetKit/fixbikenet/archive/refs/heads/main.zip) and create the environment via the [`environment.yml`](environment.yml) file:
-
-```
-pixi init --import environment.yml
-```
-
-##### With mamba/conda/pip
-
-Alternatively to Pixi, use [`mamba`](https://mamba.readthedocs.io/en/latest/index.html) or [`conda`](https://docs.conda.io/projects/conda/en/latest/index.html).
-
-<details><summary>Instructions</summary>
-
-> [!IMPORTANT]  
-> As of 2026-05-06, the conda-forge installation is not yet working. We will remove this note once it works.
-
-```
-mamba create -n fbnenv -c conda-forge fixbikenet
-mamba activate fbnenv
-```
-
-_Alternatively_, or if you run into issues, [clone this repository](https://github.com/BikeNetKit/fixbikenet/archive/refs/heads/main.zip) and create the environment via the [`environment.yml`](environment.yml) file:
-
-```
-mamba env create --file environment.yml
-mamba activate fbnenv
-pip install fixbikenet
-```
-
-</details>
-
-### Run fixbikenet in Jupyter lab
-
-After having set up the environment above, if you wish to run fixbikenet via [JupyterLab](https://pypi.org/project/jupyterlab/), follow the
-
-<details><summary>Instructions</summary>
-
-#### With Pixi
-Running fixbikenet in Jupter lab with [`Pixi`](https://pixi.prefix.dev/latest/) is straightforward:
-
-```
-pixi run jupyter lab
-```
-
-An instance of Jupyter lab is automatically going to open in your browser after the environment is built.
-
-#### With mamba/conda
-
-Using mamba/conda, run:
-
-```
-mamba activate fbnenv
-ipython kernel install --user --name=fbnenv
-mamba deactivate
-jupyter lab
-```
-
-Once Jupyter lab opens, switch the kernel (Kernel > Change Kernel > fbnenv)
-
-#### With pip
-
-Using pip, run:
-
-```
-pip install --user ipykernel
-python -m ipykernel install --user --name=fbnenv
-jupyter lab
-```
-
-Once Jupyter lab opens, switch the kernel (Kernel > Change Kernel > fbnenv)
-
-</details>
-
-## Development installation
-
-If you want to develop the project, [clone this repository](https://github.com/BikeNetKit/fixbikenet/archive/refs/heads/main.zip) and create the environment via the [`environment-dev.yml`](environment-dev.yml) file:
-
-```
-pixi init --import environment-dev.yml
-```
-
-The developemt environment is called `fbnenvdev`. Make sure to also read [our contribution guidelines](https://github.com/BikeNetKit/FixBikeNet?tab=contributing-ov-file).
+### Advanced and development installations
+ See our [installation docs](https://bikenetkit.github.io/FixBikeNet/installation/) for details.
 
 ## Usage
 
@@ -139,21 +45,12 @@ We provide a minimum working example in two formats:
 - Python script ([examples/mwe.py](examples/mwe.py))
 - Jupyter notebook ([examples/mwe.ipynb](examples/mwe.ipynb))
 
-## Repository structure
+## Docs
+Find more information in our docs: [https://bikenetkit.github.io/FixBikeNet/](https://bikenetkit.github.io/FixBikeNet/)
 
-```
-├── fixbikenet             <- Packaged functions and visualizations
-├── tests                   <- Tests to execute to ensure functionality
-├── .gitignore              <- Files and folders ignored by git
-├── .pre-commit-config.yaml <- Pre-commit hooks used
-├── README.md
-├── environment.yml         <- Environment file to set up the environment using conda/mamba/pixi
-```
 
-## Credits
+## Supported by
+Development of BikeNetKit/FixBikeNet was supported by the [Innovation Fund Denmark](https://innovationsfonden.dk/en) and the EU HORIZON project [JUST STREETS](https://www.just-streets.eu).
 
-<!--Please cite as:
->AUTHOR1, AUTHOR2, and AUTHOR3, PROJECTNAME, JOURNAL (YYYY), DOIURL
--->
 
-Development of FixBikeNet was supported by the Danish Innovation Fund (Innovationsfonden).
+[![Innovation Fund Denmark](https://raw.githubusercontent.com/BikeNetKit/.github/refs/heads/main/profile/_static/logo_innovationfund.png)](https://innovationsfonden.dk/en) &emsp;&emsp; [![European Union](https://raw.githubusercontent.com/BikeNetKit/.github/refs/heads/main/profile/_static/logo_eu.png)](https://commission.europa.eu/index_en) &ensp; [![JUST STREETS](https://raw.githubusercontent.com/BikeNetKit/.github/refs/heads/main/profile/_static/logo_juststreets.png)](https://www.just-streets.eu/) 

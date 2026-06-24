@@ -13,9 +13,10 @@ authors = [
 maintainers = [{ name = "Manuel Knepper", email = "manuel.knepper@gmx.net" }]
 license = "AGPL-3.0-or-later"
 readme = "README.md"
-description = "Python package to detect gaps in developed bicycle networks"
+description = "BikeNetKit Python package to detect gaps in developed bicycle networks"
 keywords = ["Bicycle network planning", "Networks", "OpenStreetMap", "Urban Planning", "Urban Mobility"]
 classifiers = [
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "Operating System :: OS Independent",
@@ -44,6 +45,9 @@ Issues = "https://github.com/BikeNetKit/FixBikeNet/issues"
 [project.optional-dependencies]
 test = ["pytest"]
 doc = ["sphinx", "momepy"]
+
+[tool.ruff.lint.extend-per-file-ignores]
+"__init__.py" = ["F401"]  # "Imported but unused: happens with packages
 
 [tool.setuptools.packages.find]
 exclude = [
