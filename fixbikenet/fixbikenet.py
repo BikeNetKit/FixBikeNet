@@ -1,5 +1,4 @@
 # import packages
-import pandas as pd
 import osmnx as ox
 import os
 import matplotlib.pyplot as plt
@@ -11,7 +10,7 @@ def fixbikenet(
     city_name,
     proj_crs = "3857",
     radius = 2500,
-    maxgap = 200,
+    maxgap = 1000,
     penalty = {0: 5, 1: 1},
     export_data = True,
     export_file_format="geojson",
@@ -27,7 +26,7 @@ def fixbikenet(
         coordinate reference system that is used to project osm data. Default is '3857' (WGS 84 / Pseudo-Mercator)
     radius : int, default 2500
         cut-off length for computation of local betweenness centrality, in meters
-    maxgap : int, default 50
+    maxgap : int, default 1000
         maximum distance between node pairs to be considered as a potential gap
     penalty : dict, default {0:5, 1: 1}
         weighing for shortest path calculations, where streets without protected bike infrastructure (pbi) get penalized
@@ -63,13 +62,15 @@ def fixbikenet(
     ### downloading and preprocessing data from OSM
     print("Downloading OSM data..")
 
+    ox.settings.useful_tags_way = ["highway", "cycleway", "cycleway:right", "cycleway:left", "cycleway:both", "cyclestreet"]
+
     # fetch street network data from osmnx
     g = ox.graph_from_place(
         city_name, network_type='all', simplify=False
     )
     g = ox.simplify_graph(
         g,
-        edge_attrs_differ=['highway']
+        edge_attrs_differ=['cycleway', 'highway', 'cycleway:right', 'cycleway:left', 'cycleway:both']
     )
 
     # export osmnx data to gdfs
@@ -101,6 +102,12 @@ def fixbikenet(
     # add weight to edges for path calculation, using penalty
     G = weigh_edges(G, penalty)
 
+    # creating new gdfs for nodes and edges of G
+    nodes_gdf = graph_nodes_to_gdf(G)
+    edges_gdf = graph_edges_to_gdf(G)
+    nodes_gdf = nodes_gdf.to_crs(proj_crs)
+    edges_gdf = edges_gdf.to_crs(proj_crs)
+
     # finding contact nodes in network
     contact_nodes = find_contact_nodes(G)
 
@@ -121,28 +128,35 @@ def fixbikenet(
     df = pd.DataFrame(
         {
             "gap": found_gaps,
-            "B": Bs,
+            "benefit": Bs,
             "nodelist": found_gaps_nsp
         }
     )
-    df = df.sort_values(by="B", ascending=False).reset_index(drop=True)
+    df = df.sort_values(by="benefit", ascending=False).reset_index(drop=True)
 
-    # only keep the 100 most important gaps. If there are fewer than 100 gaps keep only those
-    if df.shape[0] > 100:
-        df = df.iloc[:100]
+    # only keep the 1000 most important gaps before declustering. If there are fewer than 1000 gaps keep only those
+    if df.shape[0] > 1000:
+        df = df.iloc[:1000]
 
-    # assign source and target nodes for each gap
-    df["source"] = [t[0] for t in df.gap]
-    df["target"] = [t[1] for t in df.gap]
+    #decluster edges
+    gap_df = gap_declustering(df, G, ebc)
+    gap_df = gap_df.sort_values(by="benefit", ascending=False).reset_index(drop=True)
 
     # compute list of all edges that are part of each gap, where each edge is u,v
-    df["edge_list"] = df.nodelist.apply(lambda x: get_correct_edgetuples(edges_gdf, x))
+    gap_df["edge_list"] = gap_df.path.apply(lambda x: get_correct_edgetuples(edges_gdf, x))
 
-    # drop keys for edges
-    edges_gdf = edges_gdf.loc[:, :, 0].copy()
+    # only keep the 100 most important gaps. If there are fewer than 100 gaps keep only those
+    if gap_df.shape[0] > 100:
+        gap_df = gap_df.iloc[:100]
+
+    # assign source and target nodes for each gap
+    gap_df["source"] = [t[0] for t in gap_df.path]
+    gap_df["target"] = [t[-1] for t in gap_df.path]
 
     # add actual geometries in network to each gap
-    gdf = create_gdf_with_geoms(df, edges_gdf)
+    gdf = create_gdf_with_geoms(gap_df, edges_gdf)
+
+    edges_pbi_gdf = edges_gdf[edges_gdf["pbi"] == 1]
 
     # Generate export data filename
     if export_data:
@@ -154,28 +168,28 @@ def fixbikenet(
     if export_data:
         ### save data
         print("Saving data..")
-        edges_gdf.drop(["osmid"], axis=1, inplace=True)
+        edges_pbi_gdf.drop(["osmid"], axis=1, inplace=True)
         city_boundary = ox.geocoder.geocode_to_gdf(city_name)
         city_boundary.to_crs(epsg=proj_crs, inplace=True)
         # We have meter precision, so rounding to integers is fine. Better would be to
         # change dtypes to int, but this does not seem possible without manual looping.
         city_boundary.geometry = city_boundary.geometry.set_precision(grid_size=1)
-        edges_gdf.geometry = edges_gdf.geometry.set_precision(grid_size=1)
+        edges_pbi_gdf.geometry = edges_pbi_gdf.geometry.set_precision(grid_size=1)
         gdf.geometry = gdf.geometry.set_precision(grid_size=1)
         if export_file_format == "geojson":
-            gdf.to_file("./results/"+export_data_filename, driver="GeoJSON")
-            edges_gdf.to_file("./results/"+city_name+"-street_network.geojson", driver="GeoJSON")
+            gdf.to_file("./results/"+export_data_filename+".geojson", driver="GeoJSON")
+            edges_pbi_gdf.to_file("./results/"+city_name+"-existing_bike_network.geojson", driver="GeoJSON")
             city_boundary.to_file("./results/"+city_name+"-city_boundary.geojson", driver="GeoJSON")
         elif export_file_format == "gpkg":
             gdf.to_file("./results/"+export_data_filename, driver="GPKG", layer="Identified gaps")
-            edges_gdf.to_file("./results/"+export_data_filename, driver="GPKG", layer="Street network", append=True)
+            edges_pbi_gdf.to_file("./results/"+export_data_filename, driver="GPKG", layer="Existing bike network", append=True)
             city_boundary.to_file("./results/"+export_data_filename, driver="GPKG", layer="City boundary", append=True)
 
         if export_plot:
             print("Saving plot..")
             os.makedirs("./results/plots/", exist_ok=True)
             fig, ax = plt.subplots(1, 1, figsize=(10, 10))
-            edges_gdf.plot(ax=ax, color="grey")
+            edges_pbi_gdf.plot(ax=ax, color="grey")
             gdf.plot(ax=ax, color="red")
             ax.set_axis_off()
             fig.savefig(f"./results/plots/"+export_data_filename+".png", dpi=150, bbox_inches='tight')

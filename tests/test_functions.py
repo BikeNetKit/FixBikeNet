@@ -9,7 +9,7 @@ from fixbikenet.functions import *
 def create_test_graph():
     G = nx.MultiDiGraph()
     G.add_edges_from([(1,2), (1,3), (2,3)])
-    highway_values = {(1,2,0):{'highway':'living_street'},
+    highway_values = {(1,2,0):{'highway':'cycleway'},
                       (1,3,0):{'highway': 'motorway'},
                       (2,3,0):{'highway':'path'}}
     nx.set_edge_attributes(G,highway_values)
@@ -19,9 +19,9 @@ def create_test_graph():
 def create_validation_graph():
     G = nx.MultiDiGraph()
     G.add_edges_from([(1, 2), (1, 3), (2, 3)])
-    attributes = {(1,2,0): {'highway': 'living_street', 'pbi': True},
+    attributes = {(1,2,0): {'highway': 'cycleway', 'pbi': True},
                   (1,3,0): {'highway': 'motorway', 'pbi': False},
-                  (2,3,0): {'highway': 'path', 'pbi': True}}
+                  (2,3,0): {'highway': 'path', 'pbi': False}}
     nx.set_edge_attributes(G, attributes)
     return G
 

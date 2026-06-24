@@ -1,24 +1,23 @@
-protected_bike_infra = {
-    'busway': 0,
-    'corridor': 0,
-    'cycleway': 0,
-    'elevator': 1,
-    'footway': 1,
-    'living_street': 1,
-    'motorway': 0,
-    'motorway_link': 0,
-    'path': 1,
-    'pedestrian': 0,
-    'primary': 0,
-    'primary_link': 0,
-    'residential': 0,
-    'secondary': 0,
-    'secondary_link': 0,
-    'service': 0,
-    'steps': 0,
-    'tertiary': 0,
-    'tertiary_link': 0,
-    'track': 1,
-    'trunk': 0,
-    'unclassified': 0
-}
+cycleway_bike_infra = [
+    'track'
+    ]
+
+cycleway_right_bike_infra = [
+    'track',
+    'opposite_track'
+]
+
+cycleway_left_bike_infra = [
+    'track',
+    'opposite_track'
+]
+
+cycleway_both_bike_infra = [
+    'track',
+    'opposite_track'
+]
+
+highway_bike_infra = [
+    'cycleway',
+    'living_street'
+]

@@ -1,12 +1,15 @@
 import networkx as nx
 import random
 import numpy as np
+import pandas as pd
 import geopandas as gpd
+import itertools
+from shapely.geometry import Point, LineString
 from . import config
 
 def map_edges_to_bike_infrastructure(g):
     """
-    map if edges in graph have bike infrastructure as specified in config_osm.yml
+    map if edges in graph have bike infrastructure as specified in config.py
 
     Parameters
     ----------
@@ -21,11 +24,17 @@ def map_edges_to_bike_infrastructure(g):
 
     # add binary edge attribute "pbi" (protected bike infra: True/False)
     for edge in g.edges(keys=True):
-        try:
-            g.edges[edge]["pbi"] = config.protected_bike_infra[
-                g.edges[edge]["highway"]
-            ]
-        except:
+        if g.edges[edge].get("cycleway") in config.cycleway_bike_infra:
+            g.edges[edge]["pbi"] = 1
+        elif g.edges[edge].get("cycleway:right") in config.cycleway_right_bike_infra:
+            g.edges[edge]["pbi"] = 1
+        elif g.edges[edge].get("cycleway:left") in config.cycleway_left_bike_infra:
+            g.edges[edge]["pbi"] = 1
+        elif g.edges[edge].get("cycleway:both") in config.cycleway_both_bike_infra:
+            g.edges[edge]["pbi"] = 1
+        elif g.edges[edge].get("highway") in config.highway_bike_infra:
+            g.edges[edge]["pbi"] = 1
+        else:
             g.edges[edge]["pbi"] = 0
     return g
 
@@ -156,11 +165,13 @@ def find_potential_gaps(contact_nodes, nodes_gdf, maxgap):
         all unique potential gaps in protected bicycle network
     """
     potential_gaps = []
+    nodes_gdf['osmid'] = nodes_gdf.index
+    contact_nodes_gdf = nodes_gdf[nodes_gdf['osmid'].isin(contact_nodes)]
 
     for node in contact_nodes:
-        node_buffer = nodes_gdf.loc[node, "geometry"].buffer(maxgap)
-        q = nodes_gdf.sindex.query(node_buffer, predicate="intersects")
-        neighbours = list(nodes_gdf.iloc[q].index)
+        node_buffer = contact_nodes_gdf.loc[node, "geometry"].buffer(maxgap)
+        q = contact_nodes_gdf.sindex.query(node_buffer, predicate="intersects")
+        neighbours = list(contact_nodes_gdf.iloc[q].index)
         neighbours.remove(node)
         # convention: sort by ascending OSMID...
         node_pairs = [tuple(sorted(z)) for z in zip([node] * len(neighbours), neighbours)]
@@ -334,6 +345,7 @@ def create_gdf_with_geoms(df, edges):
         projected GeoDataFrame with path nodes and path edges and merged geometries
     """
     # get geometry by merging all geoms from edge gdf
+    df = df.copy()
     df["geometry"] = df.edge_list.apply(
         lambda x: edges.loc[x].geometry.union_all()
     )
@@ -342,3 +354,192 @@ def create_gdf_with_geoms(df, edges):
     # merge multilinestring into linestring where possible (should be possible everywhere)
     gdf["geometry"] = gdf.line_merge()
     return gdf
+
+def graph_nodes_to_gdf(G):
+    """
+    Parameters
+    ----------
+    G: networkx.Graph
+        undirected simple graph representing the street network with weighted edges
+
+    Returns
+    -------
+    nodes_gdf: geopandas.GeoDataFrame
+        geodataframe with nodes from G
+    """
+    rows = []
+    for n, data in G.nodes(data=True):
+        rows.append({
+            "node": n,
+            **data,
+            "geometry": Point(data["x"], data["y"])
+        })
+    nodes_gdf = gpd.GeoDataFrame(
+        rows,
+        geometry="geometry",
+        crs=G.graph.get("crs")
+    ).set_index("node")
+
+    return nodes_gdf
+
+def graph_edges_to_gdf(G):
+    """
+    Parameters
+    ----------
+    G: networkx.Graph
+        undirected simple graph representing the street network with weighted edges
+
+    Returns
+    -------
+    edges_gdf: geopandas.GeoDataFrame
+        geodataframe with edges from G, including edge attributes
+    """
+    rows = []
+    for u, v, data in G.edges(data=True):
+        # if geometry already exists on the edge, use it
+        if "geometry" in data:
+            geom = data["geometry"]
+        else:
+            # otherwise build a straight line from node coordinates
+            geom = LineString([
+                (G.nodes[u]["x"], G.nodes[u]["y"]),
+                (G.nodes[v]["x"], G.nodes[v]["y"])
+            ])
+        rows.append({
+            "u": u,
+            "v": v,
+            **data,
+            "geometry": geom
+        })
+    edges_gdf = gpd.GeoDataFrame(
+        rows,
+        geometry="geometry",
+        crs=G.graph.get("crs")
+    ).set_index(["u", "v"])
+
+    return edges_gdf
+
+def compute_benefit_metric(comp, node_path, ebc):
+    """
+    computes Benefit metric B for edge in connected component of edges.
+
+    Parameters
+    ----------
+    comp : networkx.Graph
+        connected component of edges
+    node_path : list
+        list of nodes on path
+    ebc: dict
+        local betweenness centrality values for all edges in network
+
+    Returns
+    -------
+    B: float
+        Benefit metric B for edge
+    """
+    edgelist = [tuple(sorted(z)) for z in zip(node_path, node_path[1:])]
+    lengths = np.array([comp.edges[edge]["length"] for edge in edgelist])
+    ebcs = np.array([ebc[edge] for edge in edgelist])
+    B = sum(lengths * ebcs) / sum(lengths)
+    return B
+
+def gap_declustering(gaps_df, G, ebc):
+    """
+    Parameters
+    ----------
+    gaps_df : pd.DataFrame
+        Dataframe containing gaps in protected bicycle network
+    G : networkx.Graph
+        undirected simple graph representing the street network with weighted edges
+    ebc: dict
+        local betweenness centrality values for all edges in network
+
+    Returns
+    -------
+    result: pd.DataFrame
+        Dataframe with node path for gaps and the newly calculated benefit metric
+    """
+    C = nx.Graph()
+    C.graph.update(G.graph)
+    gap_edges = set()
+
+    # collect all edges used by the gap paths
+    for nodelist in gaps_df["nodelist"]:
+        for u, v in zip(nodelist[:-1], nodelist[1:]):
+            if G.has_edge(u, v):
+                gap_edges.add((u, v))
+            elif G.has_edge(v, u):
+                gap_edges.add((v, u))
+            else:
+                raise KeyError(f"Edge {(u, v)} not found in G")
+
+    # add those edges + all their attributes
+    for u, v in gap_edges:
+        C.add_node(u, **G.nodes[u])
+        C.add_node(v, **G.nodes[v])
+        C.add_edge(u, v, **G[u][v])
+
+    components = [
+        C.subgraph(nodes).copy()
+        for nodes in nx.connected_components(C)
+    ]
+    selected_paths = []
+    selected_scores = []
+
+    for comp in components:
+        while comp.number_of_edges() > 0:
+            # nodes with degree != 2
+            terminals = [
+                n
+                for n, degree in comp.degree()
+                if degree != 2
+            ]
+            candidate_paths = []
+            # shortest paths between all terminal pairs
+            for source, target in itertools.combinations(terminals, 2):
+                try:
+                    node_path = nx.shortest_path(
+                        comp,
+                        source=source,
+                        target=target,
+                        weight="length"
+                    )
+                    if node_path:
+                        candidate_paths.append(node_path)
+                except nx.NetworkXNoPath:
+                    continue
+            if not candidate_paths:
+                break
+            # Compute benefit metric
+            best_path = None
+            best_score = float("-inf")
+            for path in candidate_paths:
+                score = compute_benefit_metric(
+                    comp,
+                    path,
+                    ebc
+                )
+                if score > best_score:
+                    best_score = score
+                    best_path = path
+            if best_path is None:
+                break
+            # Store selected gap
+            selected_paths.append(best_path)
+            selected_scores.append(best_score)
+
+            # Remove selected path
+            edge_path = list(
+                        zip(best_path[:-1], best_path[1:])
+                    )
+            comp.remove_edges_from(edge_path)
+            # Remove isolated nodes
+            isolates = list(nx.isolates(comp))
+            comp.remove_nodes_from(isolates)
+    result = pd.DataFrame(
+        {
+            "path": selected_paths,
+            "benefit": selected_scores,
+        }
+    )
+    return result
