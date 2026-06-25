@@ -1,3 +1,10 @@
+## Version 0.7.0 (2026-06-25)
+
+- 🔧 moved from config.yml to config.py setup in package
+- 🔧 updated definition of protected bicycle infrastructure to be consistent with other projects (e.g. GrowBikeNet).
+- ✨ added declustering step to pipeline
+- ✨ set maxgap default value to 1000 for better results
+
 ## Version 0.6.0 (2026-05-27)
 
 - 🔧 fix for config.yml in package
