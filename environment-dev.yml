@@ -12,6 +12,7 @@ dependencies:
   - osmnx>=1.9.4
   - pip
   - pytest
+  - pytest-cov
   - pixi-pycharm
   - pre-commit
   - sphinx
