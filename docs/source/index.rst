@@ -6,11 +6,16 @@
 FixBikeNet |version| documentation
 ===================================
 
-The Python package ``fixbikenet`` identifies the most important gaps to fill in a city's bicycle network. It is hosted on `Github <https://github.com/BikeNetKit/FixBikeNet>`__, part of `BikeNetKit <https://bikenetkit.org>`__.
+The Python package ``fixbikenet`` identifies the most important gaps to fill in a city's bicycle network. You can download street and bike network data with a single line of code, simulate different bicycle network fixing scenarios, and export and plot the resulting prioritized gaps. It is hosted on `Github <https://github.com/BikeNetKit/FixBikeNet>`__, part of `BikeNetKit <https://bikenetkit.org>`__.
 
-The software downloads and pre-processes data from OpenStreetMap, identifies the gaps, saves the results, creates plots and videos. The source code builds on `the code from the
-research paper <https://github.com/anastassiavybornova/bikenwgaps>`__ *Automated Detection of Missing Links in Bicycle Networks*.
+FixBikeNet is a decision support tool for urban planners. It is also useful for proactive citizens to help inform their city about data-driven improvements, and it aims to foster research on bicycle networks.
 
+When to use
+-----------
+
+FixBikeNet works well for cities or areas that have a well developed -but not yet perfect- bicycle network. Recommended example cities to fix: Aalborg, Amsterdam, Copenhagen
+
+For alternative approaches, or for cities with less developed bicycle networks, consider using `LinkBikeNet <https://github.com/BikeNetKit/LinkBikeNet>`__ or extending the existing network with `GrowBikeNet <https://github.com/BikeNetKit/GrowBikeNet>`__.
 
 Setup and use
 -------------
@@ -23,6 +28,12 @@ is a good place to start, which also explains how the package works in detail. F
 .. =================
 
 .. TBA
+
+Source
+------
+
+The source code builds on `the code from the
+research paper <https://github.com/anastassiavybornova/bikenwgaps>`__ *Automated Detection of Missing Links in Bicycle Networks*.
 
 How to cite
 -----------

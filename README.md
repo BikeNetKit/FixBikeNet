@@ -1,4 +1,4 @@
-# <a href="https://docs.bikenetkit.org/FixBikeNet/"><img src="docs/source/_static/logo_fixbikenet.png" alt="FixBikeNet" width="400"></a>
+# <a href="https://docs.bikenetkit.org/FixBikeNet/"><img src="docs/source/_static/logo_fixbikenet.svg" alt="FixBikeNet" width="400"></a>
 
 [![PyPI Version](https://img.shields.io/pypi/v/fixbikenet?color=10d249)](https://pypi.org/project/FixBikeNet/)
 [![Docs](https://github.com/BikeNetKit/FixBikeNet/actions/workflows/docs.yml/badge.svg)](https://bikenetkit.github.io/FixBikeNet/)
