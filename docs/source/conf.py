@@ -61,12 +61,15 @@ html_static_path = ["_static"]
 ### select html theme
 html_theme = "furo"
 
+html_logo = "_static/logo_fixbikenet.svg"
+html_favicon = "_static/favicon.png"
 html_theme_options = {
-    "pygment_light_style": "tango",
-    "logo": {
-        "image_light": "logo.png",
-        "image_dark": "logo.png",
-    },
+    "sidebar_hide_name": True,
+    "source_repository": "https://github.com/BikeNetKit/FixBikeNet/",
+    "source_branch": "main",
+    "source_directory": "docs/source/",
+    "top_of_page_buttons": ["view", "edit"],
+    "navigation_with_keys": True,
     "light_css_variables": {
         "color-brand-primary": "#096a51",
         "color-brand-content": "#096a51",
