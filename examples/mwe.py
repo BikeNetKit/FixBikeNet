@@ -3,8 +3,8 @@
 import fixbikenet as fbn
 
 gaps = fbn.fixbikenet(
-    city_name="Frederiksberg municipality",
+    city_query="Frederiksberg municipality",
     export_file_format="geojson",
 )
 
-# data is saved in current working directory, as gaps.gpkg
+# data is saved in directory ./results
