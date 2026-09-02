@@ -6,6 +6,7 @@ import geopandas as gpd
 import osmnx as ox
 import re
 import itertools
+import sys # use sys.exit() for debugging
 from shapely.geometry import Point, LineString
 from . import config
 from . import settings
@@ -197,16 +198,16 @@ def find_potential_gaps(contact_nodes, nodes_gdf, maxgap):
 
     Parameters
     ----------
-    contact_nodes: list
+    contact_nodes : list
         list of all nodes that fulfill criteria to be a contact node
-    nodes_gdf: geopandas.GeoDataFrame
+    nodes_gdf : geopandas.GeoDataFrame
         all nodes in street network
-    maxgap: int
+    maxgap : int
         user defined maximal euclidean distance between two contact nodes
 
     Returns
     -------
-    potential_gaps: list
+    potential_gaps : list
         all unique potential gaps in protected bicycle network
     """
     potential_gaps = []
@@ -490,7 +491,7 @@ def compute_benefit_metric(comp, node_path, ebc):
     B = sum(lengths * ebcs) / sum(lengths)
     return B
 
-def gap_declustering(gaps_df, G, ebc):
+def gap_declustering(gaps_df, G, ebc, contact_nodes):
     """
     Parameters
     ----------
@@ -500,6 +501,7 @@ def gap_declustering(gaps_df, G, ebc):
         undirected simple graph representing the street network with weighted edges
     ebc: dict
         local betweenness centrality values for all edges in network
+    contact_nodes : list
 
     Returns
     -------
@@ -535,11 +537,11 @@ def gap_declustering(gaps_df, G, ebc):
 
     for comp in components:
         while comp.number_of_edges() > 0:
-            # nodes with degree != 2
+            # contact nodes (in the paper it says degree != 2, but contact nodes work better)
             terminals = [
                 n
-                for n, degree in comp.degree()
-                if degree != 2
+                for n in comp.nodes()
+                if n in contact_nodes
             ]
             candidate_paths = []
             # shortest paths between all terminal pairs
@@ -580,6 +582,7 @@ def gap_declustering(gaps_df, G, ebc):
                         zip(best_path[:-1], best_path[1:])
                     )
             comp.remove_edges_from(edge_path)
+            # comp.remove_nodes_from(best_path)
             # Remove isolated nodes
             isolates = list(nx.isolates(comp))
             comp.remove_nodes_from(isolates)

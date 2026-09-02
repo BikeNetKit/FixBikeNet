@@ -1,6 +1,7 @@
 # import packages
 import osmnx as ox
 import os
+import sys # use sys.exit() for debugging
 import matplotlib.pyplot as plt
 from collections import defaultdict
 
@@ -20,7 +21,7 @@ def fixbikenet(
     import_files={},
 ):
     """
-    Finds gaps in bicycle networks and returns the 100 that are the most important to fill.
+    Finds gaps in bicycle networks and returns the 50 that are the most important to fill.
     Parameters
     ----------
     city_query : str
@@ -51,8 +52,8 @@ def fixbikenet(
                 >>> ox.io.save_graph_geopackage(g, "Barcelona_streets.gpkg").
     Returns
     -------
-    gdf : geopandas.geodataframe.GeoDataFrame
-        ordered geodataframe with the 100 most important gaps to fill
+    gaps_ordered : geopandas.geodataframe.GeoDataFrame
+        ordered geodataframe with the 50 most important gaps to fill
 
     References
     ----------
@@ -118,12 +119,27 @@ def fixbikenet(
 
     # finding contact nodes in network
     contact_nodes = find_contact_nodes(G)
+    # contact_nodes_gdf = graph_nodes_to_gdf(G.subgraph(contact_nodes))
+    # contact_nodes_gdf.to_file("results/contact_nodes.geojson")
+    # sys.exit()
 
     # finding potential gaps in network
     potential_gaps = find_potential_gaps(contact_nodes, nodes_gdf, maxgap)
+    potential_gaps_nodes = [x for xs in potential_gaps for x in xs]
+    potential_gaps_nodes_gdf = graph_nodes_to_gdf(G.subgraph(potential_gaps_nodes))
+    potential_gaps_nodes_gdf.to_file("results/potential_gaps_nodes.geojson")
+    # print(potential_gaps)
+    # sys.exit()
 
     # add routing for gaps in network
     found_gaps, found_gaps_nsp = find_actual_gaps(G, potential_gaps)
+    # print(found_gaps)
+    # print("")
+    # print(found_gaps_nsp)
+    found_gaps_nodes = [x for xs in found_gaps_nsp for x in xs]
+    found_gaps_nodes_gdf = graph_nodes_to_gdf(G.subgraph(found_gaps_nodes))
+    found_gaps_nodes_gdf.to_file("results/found_gaps_nodes.geojson")
+    # sys.exit()
 
     # calculating local betweenness score dependent on radius
     print("Calculating betweenness centrality..")
@@ -142,35 +158,40 @@ def fixbikenet(
     )
     df = df.sort_values(by="benefit", ascending=False).reset_index(drop=True)
 
-    # only keep the 1000 most important gaps before declustering. If there are fewer than 1000 gaps keep only those
-    if df.shape[0] > 1000:
-        df = df.iloc[:1000]
+    # only keep the 500 most important gaps before declustering. If there are fewer than 500 gaps keep only those
+    if df.shape[0] > 500:
+        df = df.iloc[:500]
 
     #decluster edges
-    gap_df = gap_declustering(df, G, ebc)
+    gap_df = gap_declustering(df, G, ebc, contact_nodes)
     gap_df = gap_df.sort_values(by="benefit", ascending=False).reset_index(drop=True)
+    # print(gap_df.iloc[0].path)
+    # sys.exit()
+    # DEBUGGING: Skipping declustering
+    # gap_df = df # debugging
+    # gap_df.rename(columns={"nodelist": "path"}, inplace=True)
 
     # compute list of all edges that are part of each gap, where each edge is u,v
     gap_df["edge_list"] = gap_df.path.apply(lambda x: get_correct_edgetuples(edges_gdf, x))
 
-    # only keep the 100 most important gaps. If there are fewer than 100 gaps keep only those
-    if gap_df.shape[0] > 100:
-        gap_df = gap_df.iloc[:100]
+    # only keep the 50 most important gaps. If there are fewer than 50 gaps keep only those
+    if gap_df.shape[0] > 50:
+        gap_df = gap_df.iloc[:50]
 
     # assign source and target nodes for each gap
     gap_df["source"] = [t[0] for t in gap_df.path]
     gap_df["target"] = [t[-1] for t in gap_df.path]
 
     # add actual geometries in network to each gap
-    gdf = create_gdf_with_geoms(gap_df, edges_gdf)
+    gaps_ordered = create_gdf_with_geoms(gap_df, edges_gdf)
 
-    gdf['ordering'] = gdf.index
-    gdf['length'] = gdf['geometry'].length
+    gaps_ordered['ordering'] = gaps_ordered.index
+    gaps_ordered['length'] = gaps_ordered['geometry'].length
 
     edges_pbi_gdf = edges_gdf[edges_gdf["pbi"] == 1]
 
     # Back to unprojected (potentially). No more calculations after here.
-    gdf.to_crs(epsg=4326, inplace=True)
+    gaps_ordered.to_crs(epsg=4326, inplace=True)
     edges_pbi_gdf.to_crs(epsg=4326, inplace=True)
     edges_gdf.to_crs(epsg=4326, inplace=True)
 
@@ -193,12 +214,12 @@ def fixbikenet(
         city_boundary = ox.geocoder.geocode_to_gdf(city_query)
         city_boundary.to_crs(epsg=4326, inplace=True)
         if export_file_format == "geojson":
-            gdf.to_file(settings.export_path + export_data_filename, driver="GeoJSON", RFC7946="YES")
+            gaps_ordered.to_file(settings.export_path + export_data_filename, driver="GeoJSON", RFC7946="YES")
             edges_pbi_gdf.to_file(settings.export_path + slugify(city_string) + "-fixbikenet" +  "-existing_bike_network.geojson", driver="GeoJSON", RFC7946="YES")
             edges_gdf.to_file(settings.export_path + slugify(city_string) + "-fixbikenet" + "-existing_street_network.geojson", driver="GeoJSON", RFC7946="YES")
             city_boundary.to_file(settings.export_path + slugify(city_string) + "-city_boundary.geojson", driver="GeoJSON", RFC7946="YES")
         elif export_file_format == "gpkg":
-            gdf.to_file(settings.export_path + export_data_filename, driver="GPKG", layer="Identified gaps")
+            gaps_ordered.to_file(settings.export_path + export_data_filename, driver="GPKG", layer="Identified gaps")
             edges_pbi_gdf.to_file(settings.export_path + export_data_filename, driver="GPKG", layer="Existing bike network", append=True)
             edges_gdf.to_file(settings.export_path + export_data_filename, driver="GPKG", layer="Existing street network", append=True)
             city_boundary.to_file(settings.export_path + export_data_filename, driver="GPKG", layer="City boundary", append=True)
@@ -208,9 +229,9 @@ def fixbikenet(
             os.makedirs("./results/plots/", exist_ok=True)
             fig, ax = plt.subplots(1, 1, figsize=(10, 10))
             edges_pbi_gdf.plot(ax=ax, color="grey")
-            gdf.plot(ax=ax, color="red")
+            gaps_ordered.plot(ax=ax, color="red")
             ax.set_axis_off()
             fig.savefig(f"./results/plots/"+export_data_filename+".png", dpi=150, bbox_inches='tight')
             plt.close()
 
-    return gdf
+    return gaps_ordered
