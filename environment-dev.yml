@@ -2,33 +2,25 @@ name: fbnenvdev
 channels:
   - conda-forge
 dependencies:
-  - python=3.12
-  - jupyter
-  - jupyterlab
-  - ipywidgets
-  - ipykernel
-  - matplotlib
-  - geopandas>=0.14
+  - python>=3.12
   - osmnx>=1.9.4
-  - pip
+  - tqdm
+
+  # additional to the non-dev env
+  - ipykernel
+  - ipywidgets
   - pytest
   - pytest-cov
-  - pixi-pycharm
-  - pre-commit
   - sphinx
   - numpydoc
   - myst-nb
-  - sphinx-book-theme
-  - nbsphinx
-  - myst-parser
-  - ipython
+  - pre-commit
+  - jupyterlab
+  - pixi-kernel
+  - jupyterlab
+  - matplotlib
   - pip:
       # not available via conda-forge:
-      - opencv-python
-      - pre-commit
-      - sphinxcontrib-bibtex
       - sphinx-copybutton
-      - sphinx-gallery
-      - python-slugify
-      - fixbikenet
       - furo
+      - fixbikenet

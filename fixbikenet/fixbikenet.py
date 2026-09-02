@@ -1,19 +1,44 @@
-# import packages
-import osmnx as ox
+from . import constants
+from . import settings
 import os
+import numpy as np
+import networkx as nx
+import osmnx as ox
+import geopandas as gpd
+import pandas as pd
+pd.set_option('display.max_columns', None) # for debugging
+import warnings
+from tqdm.auto import tqdm
+import time
 import sys # use sys.exit() for debugging
 import matplotlib.pyplot as plt
 from collections import defaultdict
-
-# import functions
-from fixbikenet.functions import *
+from fixbikenet.functions import (
+    compute_local_betweenness_centrality,
+    create_gdf_with_geoms,
+    find_actual_gaps,
+    find_contact_nodes,
+    find_edges_to_drop,
+    find_potential_gaps,
+    gap_declustering,
+    get_correct_edgetuples,
+    graph_nodes_to_gdf,
+    graph_edges_to_gdf,
+    import_network,
+    initialize_progress_bar,
+    rank_gaps_by_b,
+    map_edges_to_bike_infrastructure,
+    slugify,
+    weigh_edges,
+    _print_footer,
+    _print_header,
+)
 
 def fixbikenet(
     city_query,
     proj_crs = "3857",
     radius = 2500,
     maxgap = 1000,
-    penalty = {0: 1.5, 1: 1},
     export_data = True,
     city_id = None,
     export_file_format="geojson",
@@ -32,8 +57,6 @@ def fixbikenet(
         cut-off length for computation of local betweenness centrality, in meters
     maxgap : int, default 1000
         maximum distance between node pairs to be considered as a potential gap
-    penalty : dict, default {0:1.5, 1: 1}
-        weighing for shortest path calculations, where streets without protected bike infrastructure (pbi) get penalized
     export_data : bool, optional, default True
         If set to True, data will be saved to a file. The filename is [slug].gpkg, where slug is a string id made out of city_name
     city_id : str | None, default None
@@ -59,6 +82,10 @@ def fixbikenet(
     ----------
     [1] Vybornova, A., Cunha, T., Gühnemann, A. and Szell, M. (2023), Automated Detection of Missing Links in Bicycle Networks. Geogr Anal, 55: 239-267. https://doi.org/10.1111/gean.12324
     """
+    # Setup
+    starttime = time.time()
+    np.random.seed(settings.random_seed)  # Set random number generator seed for reproducibility
+    _print_header(city_query)
     # check if user input is valid
     if type(city_query) != str:
         raise TypeError("city_query must be a string")
@@ -78,19 +105,18 @@ def fixbikenet(
     import_files = defaultdict(lambda: None, import_files)
 
     if import_files['street_network'] is not None:
-        print("Importing street network..")
+        progress_bar = initialize_progress_bar("Importing network data", 1, "network")
         g = import_network(import_files['street_network'])
-
     else:
         ### downloading and preprocessing data from OSM
-        print("Downloading OSM data..")
-
+        progress_bar = initialize_progress_bar("Downloading OSM data", 1, "network")
         ox.settings.useful_tags_way = ["highway", "cycleway", "cycleway:right", "cycleway:left", "cycleway:both", "cyclestreet"]
-
         # fetch street network data from osmnx
         g = ox.graph_from_place(
             city_query, network_type='all', simplify=False
         )
+    progress_bar.update(1)
+    progress_bar.close()
 
     g = ox.simplify_graph(
         g,
@@ -100,16 +126,14 @@ def fixbikenet(
     # check which edges have existing bike infrastructure as defined in config/config_osm.yml and assign boolean value to edges
     g = map_edges_to_bike_infrastructure(g)
 
-    print("Dropping parallel edges..")
     edges_to_drop = find_edges_to_drop(g)
     g.remove_edges_from(edges_to_drop)
 
-    print("Detecting gaps..")
     # Capital-G: the Graph() object we will be working with from now on
     G = nx.Graph(g)
 
-    # add weight to edges for path calculation, using penalty
-    G = weigh_edges(G, penalty)
+    # add weight to edges for path calculation, using constants._ROUTING_PENALTY
+    G = weigh_edges(G)
 
     # creating new gdfs for nodes and edges of G
     nodes_gdf = graph_nodes_to_gdf(G)
@@ -122,21 +146,14 @@ def fixbikenet(
 
     # finding potential gaps in network
     potential_gaps = find_potential_gaps(contact_nodes, nodes_gdf, maxgap)
-    potential_gaps_nodes = [x for xs in potential_gaps for x in xs]
-    potential_gaps_nodes_gdf = graph_nodes_to_gdf(G.subgraph(potential_gaps_nodes))
-    potential_gaps_nodes_gdf.to_file("results/potential_gaps_nodes.geojson")
 
     # add routing for gaps in network
     found_gaps, found_gaps_nsp = find_actual_gaps(G, potential_gaps)
-    found_gaps_nodes = [x for xs in found_gaps_nsp for x in xs]
-    found_gaps_nodes_gdf = graph_nodes_to_gdf(G.subgraph(found_gaps_nodes))
-    found_gaps_nodes_gdf.to_file("results/found_gaps_nodes.geojson")
 
     # calculating local betweenness score dependent on radius
-    print("Calculating betweenness centrality..")
     ebc = compute_local_betweenness_centrality(G, nodes_gdf, radius)
 
-    print("Ranking gaps..")
+    progress_bar = initialize_progress_bar("Ordering gaps", 1, "step")
     # calculate parameter B for all gaps, used for deciding which gaps are most important
     Bs = rank_gaps_by_b(found_gaps_nsp, G, ebc)
 
@@ -152,6 +169,8 @@ def fixbikenet(
     # only keep the 500 most important gaps before declustering. If there are fewer than 500 gaps keep only those
     if df.shape[0] > 500:
         df = df.iloc[:500]
+    progress_bar.update(1)
+    progress_bar.close()
 
     #decluster edges
     gap_df = gap_declustering(df, G, ebc, contact_nodes)
@@ -194,7 +213,6 @@ def fixbikenet(
 
     if export_data:
         ### save data
-        print("Saving data..")
         edges_pbi_gdf.drop(["osmid"], axis=1, inplace=True)
         edges_gdf.drop(["osmid"], axis=1, inplace=True)
         city_boundary = ox.geocoder.geocode_to_gdf(city_query)
@@ -211,7 +229,6 @@ def fixbikenet(
             city_boundary.to_file(settings.export_path + export_data_filename, driver="GPKG", layer="City boundary", append=True)
 
         if export_plot:
-            print("Saving plot..")
             os.makedirs("./results/plots/", exist_ok=True)
             fig, ax = plt.subplots(1, 1, figsize=(10, 10))
             edges_pbi_gdf.plot(ax=ax, color="grey")
@@ -219,5 +236,9 @@ def fixbikenet(
             ax.set_axis_off()
             fig.savefig(f"./results/plots/"+export_data_filename+".png", dpi=150, bbox_inches='tight')
             plt.close()
+
+    # Cleanup, finalize
+    endtime = time.time()
+    _print_footer(export_data, endtime, starttime)
 
     return gaps_ordered
