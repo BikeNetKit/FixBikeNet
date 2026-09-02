@@ -119,27 +119,18 @@ def fixbikenet(
 
     # finding contact nodes in network
     contact_nodes = find_contact_nodes(G)
-    # contact_nodes_gdf = graph_nodes_to_gdf(G.subgraph(contact_nodes))
-    # contact_nodes_gdf.to_file("results/contact_nodes.geojson")
-    # sys.exit()
 
     # finding potential gaps in network
     potential_gaps = find_potential_gaps(contact_nodes, nodes_gdf, maxgap)
     potential_gaps_nodes = [x for xs in potential_gaps for x in xs]
     potential_gaps_nodes_gdf = graph_nodes_to_gdf(G.subgraph(potential_gaps_nodes))
     potential_gaps_nodes_gdf.to_file("results/potential_gaps_nodes.geojson")
-    # print(potential_gaps)
-    # sys.exit()
 
     # add routing for gaps in network
     found_gaps, found_gaps_nsp = find_actual_gaps(G, potential_gaps)
-    # print(found_gaps)
-    # print("")
-    # print(found_gaps_nsp)
     found_gaps_nodes = [x for xs in found_gaps_nsp for x in xs]
     found_gaps_nodes_gdf = graph_nodes_to_gdf(G.subgraph(found_gaps_nodes))
     found_gaps_nodes_gdf.to_file("results/found_gaps_nodes.geojson")
-    # sys.exit()
 
     # calculating local betweenness score dependent on radius
     print("Calculating betweenness centrality..")
@@ -165,11 +156,6 @@ def fixbikenet(
     #decluster edges
     gap_df = gap_declustering(df, G, ebc, contact_nodes)
     gap_df = gap_df.sort_values(by="benefit", ascending=False).reset_index(drop=True)
-    # print(gap_df.iloc[0].path)
-    # sys.exit()
-    # DEBUGGING: Skipping declustering
-    # gap_df = df # debugging
-    # gap_df.rename(columns={"nodelist": "path"}, inplace=True)
 
     # compute list of all edges that are part of each gap, where each edge is u,v
     gap_df["edge_list"] = gap_df.path.apply(lambda x: get_correct_edgetuples(edges_gdf, x))

@@ -582,7 +582,6 @@ def gap_declustering(gaps_df, G, ebc, contact_nodes):
                         zip(best_path[:-1], best_path[1:])
                     )
             comp.remove_edges_from(edge_path)
-            # comp.remove_nodes_from(best_path)
             # Remove isolated nodes
             isolates = list(nx.isolates(comp))
             comp.remove_nodes_from(isolates)
