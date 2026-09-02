@@ -1,15 +1,57 @@
-import networkx as nx
-import random
+"""Utility functions for `fixbikenet`."""
+
+from . import constants
+from . import settings
+from . import config
+import os
+import itertools
+from collections import defaultdict
+import re
 import numpy as np
 import pandas as pd
+pd.set_option('display.max_columns', None) # for debugging
 import geopandas as gpd
+import warnings
+import networkx as nx
 import osmnx as ox
-import re
-import itertools
+import shapely
+from shapely.geometry import Point, LineString, MultiLineString
+from pyproj import Transformer
+from tqdm.auto import tqdm
+import datetime
 import sys # use sys.exit() for debugging
-from shapely.geometry import Point, LineString
-from . import config
-from . import settings
+
+
+def _print_header(city_query):
+    """Print header.
+    """
+    if not settings.silent:
+        print((constants._PROGRESS_BAR_DESC_LENGTH+constants._PROGRESS_BAR_LENGTH)*"=")
+        print("RUNNING FIXBIKENET FOR CITY: " + city_query)
+        print((constants._PROGRESS_BAR_DESC_LENGTH+constants._PROGRESS_BAR_LENGTH)*"-"+"╮")
+
+def _print_footer(export_data, endtime, starttime):
+    """Print footer.
+    """
+    if not settings.silent:
+        print((constants._PROGRESS_BAR_DESC_LENGTH+constants._PROGRESS_BAR_LENGTH)*"-"+"╯")
+        if export_data:
+            print("Data exported to "+settings.export_path)
+        if export_data or export_plots:
+            print((constants._PROGRESS_BAR_DESC_LENGTH+constants._PROGRESS_BAR_LENGTH)*"-")
+        print("FINISHED IN " + str(datetime.timedelta(seconds = round(endtime - starttime))))
+        print((constants._PROGRESS_BAR_DESC_LENGTH+constants._PROGRESS_BAR_LENGTH)*"=")
+
+def initialize_progress_bar(desc_string, total=1, unit="step"):
+    """Initialize tqdm progress bar.
+    """
+    return tqdm(
+        desc=("{:<"+str(constants._PROGRESS_BAR_DESC_LENGTH)+"}").format(desc_string),
+        total=total,
+        unit=unit,
+        bar_format='{l_bar}{bar:'+str(constants._PROGRESS_BAR_LENGTH-7)+'}{r_bar}',
+        disable=settings.silent,
+    )
 
 def import_network(street_network, import_path=settings.import_path):
     """Import and project a street network from gpkg file
@@ -129,7 +171,15 @@ def find_edges_to_drop(g):
     uvs = list(set(uvs))
     edges_to_drop = []
 
-    for uv in uvs:
+    for uv in tqdm(
+            uvs,
+            desc=("{:<"+str(constants._PROGRESS_BAR_DESC_LENGTH)+"}").format("Dropping parallel edges"),
+            leave=True,
+            unit="edge",
+            total=len(uvs),
+            bar_format='{l_bar}{bar:'+str(constants._PROGRESS_BAR_LENGTH-7)+'}{r_bar}',
+            disable=settings.silent,
+        ):
         # collect all parallel edges for u-v node pair;
         # account for the fact that edges are directed! uv[::-1]==vu might also be on the list
         parallel_edges = [edge for edge in list(g.edges) if (edge[:2] == uv) or (edge[:2] == uv[::-1])]
@@ -146,7 +196,7 @@ def find_edges_to_drop(g):
     edges_to_drop = list(set(edges_to_drop))
     return edges_to_drop
 
-def weigh_edges(G, penalty):
+def weigh_edges(G):
     """
     adds weight parameter to all edges in G, which is calculated by multiplying the length of the edge with the corresponding penalty value
 
@@ -154,8 +204,6 @@ def weigh_edges(G, penalty):
     ----------
     G: networkx.Graph
         undirected simple graph representing the street network
-    penalty: dictionary
-        dictionary of penalty values, dependent on if edge has bike infrastructure or not
 
     Returns
     -------
@@ -166,7 +214,7 @@ def weigh_edges(G, penalty):
         # compute edge weight
         edge_pbi = G.edges[edge]["pbi"]
         edge_length = G.edges[edge]["length"]
-        edge_weight = edge_length * penalty[edge_pbi]
+        edge_weight = edge_length * constants._ROUTING_PENALTY[edge_pbi]
         # add as attribute
         G.edges[edge]["weight"] = edge_weight
     return G
@@ -250,7 +298,15 @@ def find_actual_gaps(G, potential_gaps):
     found_gaps = []
     found_gaps_nsp = []
 
-    for u, v in potential_gaps:
+    for u, v in tqdm(
+            potential_gaps,
+            desc=("{:<"+str(constants._PROGRESS_BAR_DESC_LENGTH)+"}").format("Finding gaps"),
+            leave=True,
+            unit="gap",
+            total=len(potential_gaps),
+            bar_format='{l_bar}{bar:'+str(constants._PROGRESS_BAR_LENGTH-7)+'}{r_bar}',
+            disable=settings.silent,
+        ):
 
         try:
             nodelist = nx.shortest_path(G, u, v, weight="length")
@@ -303,9 +359,16 @@ def compute_local_betweenness_centrality(G, nodes_gdf, radius):
 
     # for each node, compute "local" ebc (buffered with radius!)
     # for comp feas, now only subset of randomly drawn 300 nodes
-    random.seed(1312)
-    random_nodes = random.choices(list(G.nodes), k=300)
-    for node in random_nodes:
+    random_nodes = np.random.choice(list(G.nodes), size=300)
+    for node in tqdm(
+            random_nodes,
+            desc=("{:<"+str(constants._PROGRESS_BAR_DESC_LENGTH)+"}").format("Calculating betweenness"),
+            leave=True,
+            unit="gap",
+            total=len(random_nodes),
+            bar_format='{l_bar}{bar:'+str(constants._PROGRESS_BAR_LENGTH-7)+'}{r_bar}',
+            disable=settings.silent,
+        ):
         node_buffer = nodes_gdf.loc[node, "geometry"].buffer(radius)
         q = nodes_gdf.sindex.query(node_buffer, predicate="intersects")
         neighbours = list(nodes_gdf.iloc[q].index)
@@ -535,7 +598,15 @@ def gap_declustering(gaps_df, G, ebc, contact_nodes):
     selected_paths = []
     selected_scores = []
 
-    for comp in components:
+    for comp in tqdm(
+            components,
+            desc=("{:<"+str(constants._PROGRESS_BAR_DESC_LENGTH)+"}").format("Declustering gaps"),
+            leave=True,
+            unit="cluster",
+            total=len(components),
+            bar_format='{l_bar}{bar:'+str(constants._PROGRESS_BAR_LENGTH-7)+'}{r_bar}',
+            disable=settings.silent,
+        ):
         while comp.number_of_edges() > 0:
             # contact nodes (in the paper it says degree != 2, but contact nodes work better)
             terminals = [
