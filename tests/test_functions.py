@@ -1,14 +1,16 @@
-from fixbikenet import constants
 from fixbikenet import settings
+from fixbikenet import constants
 from fixbikenet import config
 import pytest
 from networkx.utils.misc import graphs_equal
 import geopandas as gpd
 from shapely.geometry import Point
+import fixbikenet as fbn
 
 from fixbikenet.functions import *
 
-constants._ROUTING_PENALTY = {0: 5, 1: 1}
+fbn.constants._ROUTING_PENALTY = {0: 5, 1: 1}
+fbn.constants._BETWEENNESS_RANDOM_NODES = 300
 
 @pytest.fixture
 def create_test_graph():
@@ -73,6 +75,7 @@ def create_weighted_graph():
     return G
 
 def test_weigh_edges(create_graph_to_weigh, create_weighted_graph):
+    fbn.constants._ROUTING_PENALTY = {0: 5, 1: 1}
     assert graphs_equal(weigh_edges(create_graph_to_weigh), create_weighted_graph)
 
 @pytest.fixture

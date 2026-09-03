@@ -21,7 +21,7 @@ jobs:
   caching:
     strategy:
       matrix:
-        python-version: ["3.12"]
+        python-version: ["3.12", "3.14"]
         os: [ ubuntu-latest ]
       fail-fast: false
     env:
@@ -40,7 +40,7 @@ jobs:
         run: echo "WEEK=$(date +'%V')" >> $GITHUB_ENV
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: mamba-org/setup-micromamba@v2
+        uses: mamba-org/setup-micromamba@v3
         with:
           create-args: python=${{ matrix.python-version }}
           environment-file: environment-dev.yml
@@ -51,12 +51,11 @@ jobs:
     needs: caching
     strategy:
       matrix:
-        python-version: ["3.12"]
+        python-version: ["3.12", "3.14"]
         os: [ ubuntu-latest ]
         submodule:
-          - {
-            name: "Functions",
-            pytest_args: "tests/test_functions.py" }
+          - { name: "Main", pytest_args: "tests/test_main.py" }
+          - { name: "Functions", pytest_args: "tests/test_functions.py" }
       fail-fast: false
 
     name: ${{ matrix.submodule.name }} (${{ matrix.python-version }} on ${{ matrix.os }})
@@ -73,7 +72,7 @@ jobs:
         run: echo "WEEK=$(date +'%V')" >> $GITHUB_ENV
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: mamba-org/setup-micromamba@v2
+        uses: mamba-org/setup-micromamba@v3
         with:
           create-args: python=${{ matrix.python-version }}
           environment-file: environment-dev.yml
