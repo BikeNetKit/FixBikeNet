@@ -67,12 +67,14 @@ def fixbikenet(
         If set to True, plot will be saved to a file
     import_files: dict, default {}
         The following key:value entries can be set:
-            "street_network" : str | None, default None
+
+            - 'street_network' : str | None, default None
                 If not set to None, the street network is loaded from this file. Must be a gpkg file in unprojected crs EPSG:4326 with layers nodes and edges, with the structure that an undirected osmnx street network g has after saved via ox.io.save_graph_geopackage(). For example:
                 >>> ox.settings.useful_tags_way = ["highway", "cycleway", "cycleway:right", "cycleway:left", "cycleway:both", "cyclestreet"]
                 >>> g = ox.graph_from_place("Barcelona", network_type='all', simplify=False)
                 >>> g = nx.MultiGraph(ox.convert.to_digraph(g))
                 >>> ox.io.save_graph_geopackage(g, "Barcelona_streets.gpkg").
+
     Returns
     -------
     gaps_ordered : geopandas.geodataframe.GeoDataFrame
@@ -108,7 +110,7 @@ def fixbikenet(
         progress_bar = initialize_progress_bar("Importing network data", 1, "network")
         g = import_network(import_files['street_network'])
     else:
-        ### downloading and preprocessing data from OSM
+        ### downloading and preprocessing data from OSM. To do: Fix download with custom filters
         progress_bar = initialize_progress_bar("Downloading OSM data", 1, "network")
         ox.settings.useful_tags_way = ["highway", "cycleway", "cycleway:right", "cycleway:left", "cycleway:both", "cyclestreet"]
         # fetch street network data from osmnx
@@ -208,21 +210,28 @@ def fixbikenet(
         )
 
     if export_data:
-        ### save data
         edges_pbi_gdf.drop(["osmid"], axis=1, inplace=True)
         edges_gdf.drop(["osmid"], axis=1, inplace=True)
         city_boundary = ox.geocoder.geocode_to_gdf(city_query)
         city_boundary.to_crs(epsg=4326, inplace=True)
         if export_file_format == "geojson":
+            progress_bar = initialize_progress_bar("Exporting data", 4, "file")
             gaps_ordered.to_file(settings.export_path + export_data_filename, driver="GeoJSON", RFC7946="YES")
+            progress_bar.update(1)
             edges_pbi_gdf.to_file(settings.export_path + slugify(city_string) + "-fixbikenet" +  "-existing_bike_network.geojson", driver="GeoJSON", RFC7946="YES")
+            progress_bar.update(1)
             edges_gdf.to_file(settings.export_path + slugify(city_string) + "-fixbikenet" + "-existing_street_network.geojson", driver="GeoJSON", RFC7946="YES")
+            progress_bar.update(1)
             city_boundary.to_file(settings.export_path + slugify(city_string) + "-city_boundary.geojson", driver="GeoJSON", RFC7946="YES")
+            progress_bar.update(1)
         elif export_file_format == "gpkg":
+            progress_bar = initialize_progress_bar("Exporting data", 1, "file")
             gaps_ordered.to_file(settings.export_path + export_data_filename, driver="GPKG", layer="Identified gaps")
             edges_pbi_gdf.to_file(settings.export_path + export_data_filename, driver="GPKG", layer="Existing bike network", append=True)
             edges_gdf.to_file(settings.export_path + export_data_filename, driver="GPKG", layer="Existing street network", append=True)
             city_boundary.to_file(settings.export_path + export_data_filename, driver="GPKG", layer="City boundary", append=True)
+            progress_bar.update(1)
+        progress_bar.close()
 
         if export_plot:
             os.makedirs("./results/plots/", exist_ok=True)
