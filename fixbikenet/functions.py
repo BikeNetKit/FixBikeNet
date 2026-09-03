@@ -279,7 +279,7 @@ def find_potential_gaps(contact_nodes, nodes_gdf, maxgap):
     potential_gaps = list(set(potential_gaps))
     return potential_gaps
 
-def find_actual_gaps(G, potential_gaps):
+def find_actual_gaps(G, potential_gaps, mingap):
     """
         determines which potential gaps are actual gaps by finding paths between all contact nodes and only keeping the gaps that have no protected bike infrastructure
 
@@ -330,7 +330,7 @@ def find_actual_gaps(G, potential_gaps):
                 valid = False
                 break
 
-        if valid:
+        if valid and nx.shortest_path_length(G, u, v, weight="length") >= mingap:
             found_gaps.append((u, v))
             found_gaps_nsp.append(nodelist)
 
@@ -369,7 +369,7 @@ def compute_local_betweenness_centrality(G, nodes_gdf, radius):
             random_nodes,
             desc=("{:<"+str(constants._PROGRESS_BAR_DESC_LENGTH)+"}").format("Calculating betweenness"),
             leave=True,
-            unit="gap",
+            unit="step",
             total=len(random_nodes),
             bar_format='{l_bar}{bar:'+str(constants._PROGRESS_BAR_LENGTH-7)+'}{r_bar}',
             disable=settings.silent,

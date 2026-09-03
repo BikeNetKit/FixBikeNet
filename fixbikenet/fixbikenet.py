@@ -38,7 +38,9 @@ def fixbikenet(
     city_query,
     proj_crs = "3857",
     radius = 2500,
+    mingap = 20,
     maxgap = 1000,
+    numgaps = 50,
     export_data = True,
     city_id = None,
     export_file_format="geojson",
@@ -46,7 +48,8 @@ def fixbikenet(
     import_files={},
 ):
     """
-    Finds gaps in bicycle networks and returns the 50 that are the most important to fill.
+    Finds gaps in bicycle networks and returns the `numgaps` that are the most important to fill.
+
     Parameters
     ----------
     city_query : str
@@ -55,8 +58,12 @@ def fixbikenet(
         coordinate reference system that is used to project osm data. Default is '3857' (WGS 84 / Pseudo-Mercator)
     radius : int, default 2500
         cut-off length for computation of local betweenness centrality, in meters
+    mingap : int, default 20
+        minimum distance between node pairs to be considered as a potential gap, in meters
     maxgap : int, default 1000
-        maximum distance between node pairs to be considered as a potential gap
+        maximum distance between node pairs to be considered as a potential gap, in meters
+    numgaps : int, default 50
+        Number of gaps to find.
     export_data : bool, optional, default True
         If set to True, data will be saved to a file. The filename is [slug].gpkg, where slug is a string id made out of city_name
     city_id : str | None, default None
@@ -78,7 +85,7 @@ def fixbikenet(
     Returns
     -------
     gaps_ordered : geopandas.geodataframe.GeoDataFrame
-        ordered geodataframe with the 50 most important gaps to fill
+        ordered geodataframe with the `numgaps` most important gaps to fill
 
     References
     ----------
@@ -95,6 +102,8 @@ def fixbikenet(
         raise TypeError("proj_crs must be a string")
     if type(radius) != int:
         raise TypeError("radius must be an integer")
+    if type(mingap) != int:
+        raise TypeError("mingap must be an integer")
     if type(maxgap) != int:
         raise TypeError("maxgap must be an integer")
     if type(export_data) is not bool:
@@ -150,7 +159,7 @@ def fixbikenet(
     potential_gaps = find_potential_gaps(contact_nodes, nodes_gdf, maxgap)
 
     # add routing for gaps in network
-    found_gaps, found_gaps_nsp = find_actual_gaps(G, potential_gaps)
+    found_gaps, found_gaps_nsp = find_actual_gaps(G, potential_gaps, mingap)
 
     # calculating local betweenness score dependent on radius
     ebc = compute_local_betweenness_centrality(G, nodes_gdf, radius)
@@ -166,27 +175,31 @@ def fixbikenet(
     )
     df = df.sort_values(by="benefit", ascending=False).reset_index(drop=True)
 
-    # only keep the 1000 most important gaps before declustering. If there are fewer than 1000 gaps keep only those
-    if df.shape[0] > 1000:
-        df = df.iloc[:1000]
+    # Only keep the numgaps*_CLUSTER_GAPS_PER_FINAL_GAP most important gaps 
+    # before declustering. If there are fewer than 
+    # numgaps*_CLUSTER_GAPS_PER_FINAL_GAP gaps keep only those
+    if df.shape[0] > numgaps*_CLUSTER_GAPS_PER_FINAL_GAP:
+        df = df.iloc[:numgaps*_CLUSTER_GAPS_PER_FINAL_GAP]
 
     #decluster edges
     gap_df = gap_declustering(df, G, ebc, contact_nodes)
-    gap_df = gap_df.sort_values(by="benefit", ascending=False).reset_index(drop=True)
+
+    progress_bar = initialize_progress_bar("Postprocess data", 5)
+    gap_df = gap_df.nlargest(numgaps, "benefit").reset_index(drop=True)
+    progress_bar.update(1)
 
     # compute list of all edges that are part of each gap, where each edge is u,v
     gap_df["edge_list"] = gap_df.path.apply(lambda x: get_correct_edgetuples(edges_gdf, x))
-
-    # only keep the 50 most important gaps. If there are fewer than 50 gaps keep only those
-    if gap_df.shape[0] > 50:
-        gap_df = gap_df.iloc[:50]
+    progress_bar.update(1)
 
     # assign source and target nodes for each gap
     gap_df["source"] = [t[0] for t in gap_df.path]
     gap_df["target"] = [t[-1] for t in gap_df.path]
+    progress_bar.update(1)
 
     # add actual geometries in network to each gap
     gaps_ordered = create_gdf_with_geoms(gap_df, edges_gdf)
+    progress_bar.update(1)
 
     gaps_ordered['ordering'] = gaps_ordered.index
     gaps_ordered['length'] = gaps_ordered['geometry'].length
@@ -197,6 +210,8 @@ def fixbikenet(
     gaps_ordered.to_crs(epsg=4326, inplace=True)
     edges_pbi_gdf.to_crs(epsg=4326, inplace=True)
     edges_gdf.to_crs(epsg=4326, inplace=True)
+    progress_bar.update(1)
+    progress_bar.close()
 
     # Generate export data filename
     if export_data:
