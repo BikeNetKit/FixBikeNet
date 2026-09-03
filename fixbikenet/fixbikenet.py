@@ -153,10 +153,8 @@ def fixbikenet(
     # calculating local betweenness score dependent on radius
     ebc = compute_local_betweenness_centrality(G, nodes_gdf, radius)
 
-    progress_bar = initialize_progress_bar("Ordering gaps", 1, "step")
     # calculate parameter B for all gaps, used for deciding which gaps are most important
     Bs = rank_gaps_by_b(found_gaps_nsp, G, ebc)
-
     df = pd.DataFrame(
         {
             "gap": found_gaps,
@@ -166,11 +164,9 @@ def fixbikenet(
     )
     df = df.sort_values(by="benefit", ascending=False).reset_index(drop=True)
 
-    # only keep the 500 most important gaps before declustering. If there are fewer than 500 gaps keep only those
-    if df.shape[0] > 500:
-        df = df.iloc[:500]
-    progress_bar.update(1)
-    progress_bar.close()
+    # only keep the 1000 most important gaps before declustering. If there are fewer than 1000 gaps keep only those
+    if df.shape[0] > 1000:
+        df = df.iloc[:1000]
 
     #decluster edges
     gap_df = gap_declustering(df, G, ebc, contact_nodes)

@@ -53,7 +53,7 @@ def initialize_progress_bar(desc_string, total=1, unit="step"):
         disable=settings.silent,
     )
 
-def import_network(street_network, import_path=settings.import_path):
+def import_network(street_network):
     """Import and project a street network from gpkg file
 
     For all edges between a pair of nodes u and v there must be one edge with key 0.
@@ -80,8 +80,8 @@ def import_network(street_network, import_path=settings.import_path):
         Convex hull of the street network
     """
 
-    nodes = gpd.read_file(import_path+street_network, layer='nodes')
-    edges = gpd.read_file(import_path+street_network, layer='edges')
+    nodes = gpd.read_file(settings.import_path+street_network, layer='nodes')
+    edges = gpd.read_file(settings.import_path+street_network, layer='edges')
 
     # Set indices as required by osmnx.convert.graph_from_gdfs
     # See: https://osmnx.readthedocs.io/en/stable/user-reference.html#osmnx.utils_graph.graph_from_gdfs
@@ -357,9 +357,10 @@ def compute_local_betweenness_centrality(G, nodes_gdf, radius):
     # create dict that will be updated at each step
     ebc = nx.get_edge_attributes(G, "ebc")
 
-    # for each node, compute "local" ebc (buffered with radius!)
-    # for comp feas, now only subset of randomly drawn 300 nodes
-    random_nodes = np.random.choice(list(G.nodes), size=300)
+    # For each node, compute "local" ebc (buffered with radius!)
+    # For computational reasons, only over a subset of randomly drawn 
+    # constants._BETWEENNESS_RANDOM_NODES nodes
+    random_nodes = np.random.choice(list(G.nodes), size=constants._BETWEENNESS_RANDOM_NODES)
     for node in tqdm(
             random_nodes,
             desc=("{:<"+str(constants._PROGRESS_BAR_DESC_LENGTH)+"}").format("Calculating betweenness"),
@@ -404,7 +405,15 @@ def rank_gaps_by_b(found_gaps_nsp, G, ebc):
         list of values of b for all gaps in protected bicycle network
     """
     Bs = []
-    for nodelist in found_gaps_nsp:
+    for nodelist in tqdm(
+            found_gaps_nsp,
+            desc=("{:<"+str(constants._PROGRESS_BAR_DESC_LENGTH)+"}").format("Ordering gaps"),
+            leave=True,
+            unit="gap",
+            total=len(found_gaps_nsp),
+            bar_format='{l_bar}{bar:'+str(constants._PROGRESS_BAR_LENGTH-7)+'}{r_bar}',
+            disable=settings.silent,
+        ):
         edgelist = [tuple(sorted(z)) for z in zip(nodelist, nodelist[1:])]
         lengths = np.array([G.edges[edge]["length"] for edge in edgelist])
         #ebcs = np.array([ebc[edge] for edge in edgelist])
@@ -574,6 +583,7 @@ def gap_declustering(gaps_df, G, ebc, contact_nodes):
     C = nx.Graph()
     C.graph.update(G.graph)
     gap_edges = set()
+    contact_nodes = set(contact_nodes)
 
     # collect all edges used by the gap paths
     for nodelist in gaps_df["nodelist"]:
@@ -609,11 +619,7 @@ def gap_declustering(gaps_df, G, ebc, contact_nodes):
         ):
         while comp.number_of_edges() > 0:
             # contact nodes (in the paper it says degree != 2, but contact nodes work better)
-            terminals = [
-                n
-                for n in comp.nodes()
-                if n in contact_nodes
-            ]
+            terminals = list(set(comp.nodes()) & contact_nodes)
             candidate_paths = []
             # shortest paths between all terminal pairs
             for source, target in itertools.combinations(terminals, 2):
