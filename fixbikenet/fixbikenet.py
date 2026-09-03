@@ -67,12 +67,14 @@ def fixbikenet(
         If set to True, plot will be saved to a file
     import_files: dict, default {}
         The following key:value entries can be set:
-            "street_network" : str | None, default None
+
+            - 'street_network' : str | None, default None
                 If not set to None, the street network is loaded from this file. Must be a gpkg file in unprojected crs EPSG:4326 with layers nodes and edges, with the structure that an undirected osmnx street network g has after saved via ox.io.save_graph_geopackage(). For example:
                 >>> ox.settings.useful_tags_way = ["highway", "cycleway", "cycleway:right", "cycleway:left", "cycleway:both", "cyclestreet"]
                 >>> g = ox.graph_from_place("Barcelona", network_type='all', simplify=False)
                 >>> g = nx.MultiGraph(ox.convert.to_digraph(g))
                 >>> ox.io.save_graph_geopackage(g, "Barcelona_streets.gpkg").
+
     Returns
     -------
     gaps_ordered : geopandas.geodataframe.GeoDataFrame
@@ -108,7 +110,7 @@ def fixbikenet(
         progress_bar = initialize_progress_bar("Importing network data", 1, "network")
         g = import_network(import_files['street_network'])
     else:
-        ### downloading and preprocessing data from OSM
+        ### downloading and preprocessing data from OSM. To do: Fix download with custom filters
         progress_bar = initialize_progress_bar("Downloading OSM data", 1, "network")
         ox.settings.useful_tags_way = ["highway", "cycleway", "cycleway:right", "cycleway:left", "cycleway:both", "cyclestreet"]
         # fetch street network data from osmnx
