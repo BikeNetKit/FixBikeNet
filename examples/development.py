@@ -10,6 +10,7 @@ gaps = fbn.fixbikenet(
     export_file_format="geojson",
     maxgap = 800,
     import_files = {
+        'city_boundary': 'boundaries/frederiksberg_dk.geojson',
         'street_network': 'streetbike_networks/frederiksberg_dk.gpkg',
     },
 )

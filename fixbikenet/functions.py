@@ -59,11 +59,17 @@ def _validate_parameters(
         raise TypeError("export_data must be a boolean")
     if export_file_format != "geojson" and export_file_format != "gpkg":
         raise ValueError("export_file_format must be 'geojson' or 'gpkg'")
+    
     if type(import_files) is not dict:
         raise TypeError("import_files must be a dictionary")
     # Prepare special case import_files. Turn it into a defaultdict where missing keys are None.
     import_files = defaultdict(lambda: None, import_files)
 
+    # Import files
+    for filename in ['city_boundary','street_network']:
+        if type(import_files[filename]) is str and not os.path.isfile(settings.import_path+import_files[filename]):
+            raise FileNotFoundError(filename+" not found")
+    
     return import_files
 
 def _validate_settings():

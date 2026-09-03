@@ -75,6 +75,11 @@ def fixbikenet(
     import_files: dict, default {}
         The following key:value entries can be set:
 
+            - 'city_boundary' : None or str, default None
+            If not set to None, the study area is selected from the 
+            (Multi)Polygon provided in the city_boundary shape or gpkg file, 
+            ideally in unprojected latitude-longitude degrees (EPSG:4326), but 
+            EPSG:3857 also works.
             - 'street_network' : str | None, default None
                 If not set to None, the street network is loaded from this file. Must be a gpkg file in unprojected crs EPSG:4326 with layers nodes and edges, with the structure that an undirected osmnx street network g has after saved via ox.io.save_graph_geopackage(). For example:
                 >>> ox.settings.useful_tags_way = ["highway", "cycleway", "cycleway:right", "cycleway:left", "cycleway:both", "cyclestreet"]
@@ -98,7 +103,13 @@ def fixbikenet(
     import_files = _validate_parameters(city_query, radius, mingap, maxgap, export_data, export_file_format, import_files)
     _print_header(city_query)
     
-
+    # Get city boundary 
+    if import_files['city_boundary']:
+        city_boundary_shp = gpd.read_file(settings.import_path+import_files['city_boundary'])
+        city_boundary = city_boundary_shp.iloc[[0]]    
+    else:
+        city_boundary = ox.geocoder.geocode_to_gdf(city_query)
+    
     if import_files['street_network'] is not None:
         progress_bar = initialize_progress_bar("Importing network data", 1, "network")
         g = import_network(import_files['street_network'])
@@ -106,10 +117,11 @@ def fixbikenet(
         ### downloading and preprocessing data from OSM. To do: Fix download with custom filters
         progress_bar = initialize_progress_bar("Downloading OSM data", 1, "network")
         ox.settings.useful_tags_way = ["highway", "cycleway", "cycleway:right", "cycleway:left", "cycleway:both", "cyclestreet"]
-        # fetch street network data from osmnx
+        # fetch street network data from osmnx. To do: Make it work with city_boundary import
         g = ox.graph_from_place(
             city_query, network_type='all', simplify=False
         )
+    
     progress_bar.update(1)
     progress_bar.close()
 
@@ -217,7 +229,6 @@ def fixbikenet(
     if export_data:
         edges_pbi_gdf.drop(["osmid"], axis=1, inplace=True)
         edges_gdf.drop(["osmid"], axis=1, inplace=True)
-        city_boundary = ox.geocoder.geocode_to_gdf(city_query)
         city_boundary.to_crs(epsg=4326, inplace=True)
         if export_file_format == "geojson":
             progress_bar = initialize_progress_bar("Exporting data", 4, "file")
