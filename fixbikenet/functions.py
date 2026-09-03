@@ -53,7 +53,7 @@ def initialize_progress_bar(desc_string, total=1, unit="step"):
         disable=settings.silent,
     )
 
-def import_network(street_network, import_path=settings.import_path):
+def import_network(street_network):
     """Import and project a street network from gpkg file
 
     For all edges between a pair of nodes u and v there must be one edge with key 0.
@@ -80,8 +80,8 @@ def import_network(street_network, import_path=settings.import_path):
         Convex hull of the street network
     """
 
-    nodes = gpd.read_file(import_path+street_network, layer='nodes')
-    edges = gpd.read_file(import_path+street_network, layer='edges')
+    nodes = gpd.read_file(settings.import_path+street_network, layer='nodes')
+    edges = gpd.read_file(settings.import_path+street_network, layer='edges')
 
     # Set indices as required by osmnx.convert.graph_from_gdfs
     # See: https://osmnx.readthedocs.io/en/stable/user-reference.html#osmnx.utils_graph.graph_from_gdfs
