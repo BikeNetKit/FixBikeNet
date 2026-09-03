@@ -130,7 +130,7 @@ def create_validation_found_gap_paths():
     return found_gap_paths
 
 def test_find_actual_gaps(create_graph_for_routing, create_potential_gaps, create_validation_found_gap_paths):
-    assert find_actual_gaps(create_graph_for_routing, create_potential_gaps) == create_validation_found_gap_paths
+    assert find_actual_gaps(create_graph_for_routing, create_potential_gaps, 0) == create_validation_found_gap_paths
 
 @pytest.fixture
 def create_betweenness_nodes():
