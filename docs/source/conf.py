@@ -33,17 +33,14 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.linkcode",
-    "sphinxcontrib.bibtex",
     "sphinx.ext.mathjax",
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
     "numpydoc",
-    "nbsphinx",
+    "myst_nb",
     "matplotlib.sphinxext.plot_directive",
     "IPython.sphinxext.ipython_console_highlighting",
-    "myst_parser",
     "sphinx_copybutton",
-    "sphinx_gallery.load_style",
 ]
 
 templates_path = ["_templates"]
