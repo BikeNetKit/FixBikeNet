@@ -32,14 +32,16 @@ from fixbikenet.functions import (
     weigh_edges,
     _print_footer,
     _print_header,
+    _resolve_crs_calculations,
+    _validate_parameters,
+    _validate_settings,
 )
 
 def fixbikenet(
     city_query,
-    proj_crs = "3857",
     radius = 2500,
     mingap = 20,
-    maxgap = 1000,
+    maxgap = 800,
     numgaps = 50,
     export_data = True,
     city_id = None,
@@ -54,13 +56,11 @@ def fixbikenet(
     ----------
     city_query : str
         name of the city that the analysis should be performed on
-    proj_crs : str, default '3857'
-        coordinate reference system that is used to project osm data. Default is '3857' (WGS 84 / Pseudo-Mercator)
     radius : int, default 2500
         cut-off length for computation of local betweenness centrality, in meters
     mingap : int, default 20
         minimum distance between node pairs to be considered as a potential gap, in meters
-    maxgap : int, default 1000
+    maxgap : int, default 800
         maximum distance between node pairs to be considered as a potential gap, in meters
     numgaps : int, default 50
         Number of gaps to find.
@@ -94,26 +94,10 @@ def fixbikenet(
     # Setup
     starttime = time.time()
     np.random.seed(settings.random_seed)  # Set random number generator seed for reproducibility
+    setting_was_auto = _validate_settings()
+    import_files = _validate_parameters(city_query, radius, mingap, maxgap, export_data, export_file_format, import_files)
     _print_header(city_query)
-    # check if user input is valid
-    if type(city_query) != str:
-        raise TypeError("city_query must be a string")
-    if type(proj_crs) != str:
-        raise TypeError("proj_crs must be a string")
-    if type(radius) != int:
-        raise TypeError("radius must be an integer")
-    if type(mingap) != int:
-        raise TypeError("mingap must be an integer")
-    if type(maxgap) != int:
-        raise TypeError("maxgap must be an integer")
-    if type(export_data) is not bool:
-        raise TypeError("export_data must be a boolean")
-    if export_file_format != "geojson" and export_file_format != "gpkg":
-        raise ValueError("export_file_format must be 'geojson' or 'gpkg'")
-    if type(import_files) is not dict:
-        raise TypeError("import_files must be a dictionary")
-        # Prepare special case import_files. Turn it into a defaultdict where missing keys are None.
-    import_files = defaultdict(lambda: None, import_files)
+    
 
     if import_files['street_network'] is not None:
         progress_bar = initialize_progress_bar("Importing network data", 1, "network")
@@ -129,13 +113,18 @@ def fixbikenet(
     progress_bar.update(1)
     progress_bar.close()
 
+    progress_bar = initialize_progress_bar("Processing network", 2)
     g = ox.simplify_graph(
         g,
         edge_attrs_differ=['cycleway', 'highway', 'cycleway:right', 'cycleway:left', 'cycleway:both']
     )
+    progress_bar.update(1)
+    g = ox.distance.add_edge_lengths(g)
 
     # check which edges have existing bike infrastructure as defined in config/config_osm.yml and assign boolean value to edges
     g = map_edges_to_bike_infrastructure(g)
+    progress_bar.update(1)
+    progress_bar.close()
 
     edges_to_drop = find_edges_to_drop(g)
     g.remove_edges_from(edges_to_drop)
@@ -149,8 +138,9 @@ def fixbikenet(
     # creating new gdfs for nodes and edges of G
     nodes_gdf = graph_nodes_to_gdf(G)
     edges_gdf = graph_edges_to_gdf(G)
-    nodes_gdf = nodes_gdf.to_crs(proj_crs)
-    edges_gdf = edges_gdf.to_crs(proj_crs)
+    _resolve_crs_calculations(nodes_gdf)
+    nodes_gdf = nodes_gdf.to_crs(constants._CRS_CALCULATIONS)
+    edges_gdf = edges_gdf.to_crs(constants._CRS_CALCULATIONS)
 
     # finding contact nodes in network
     contact_nodes = find_contact_nodes(G)
@@ -175,11 +165,11 @@ def fixbikenet(
     )
     df = df.sort_values(by="benefit", ascending=False).reset_index(drop=True)
 
-    # Only keep the numgaps*_CLUSTER_GAPS_PER_FINAL_GAP most important gaps 
-    # before declustering. If there are fewer than 
-    # numgaps*_CLUSTER_GAPS_PER_FINAL_GAP gaps keep only those
-    if df.shape[0] > numgaps*_CLUSTER_GAPS_PER_FINAL_GAP:
-        df = df.iloc[:numgaps*_CLUSTER_GAPS_PER_FINAL_GAP]
+    # Only keep the numgaps*constants._CLUSTER_GAPS_PER_FINAL_GAP most 
+    # important gaps before declustering. If there are fewer than 
+    # numgaps*constants._CLUSTER_GAPS_PER_FINAL_GAP gaps keep only those
+    if df.shape[0] > numgaps*constants._CLUSTER_GAPS_PER_FINAL_GAP:
+        df = df.iloc[:numgaps*constants._CLUSTER_GAPS_PER_FINAL_GAP]
 
     #decluster edges
     gap_df = gap_declustering(df, G, ebc, contact_nodes)

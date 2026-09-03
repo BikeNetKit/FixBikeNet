@@ -22,6 +22,87 @@ import datetime
 import sys # use sys.exit() for debugging
 
 
+def _validate_parameters(
+        city_query,
+        radius,
+        mingap,
+        maxgap,
+        export_data,
+        export_file_format,
+        import_files,
+    ):
+    """ Check if user parameter input is valid. If not, raise an exception or 
+    warning.
+    
+    Parameters
+    ----------
+    Same as `growbikenet.growbikenet()`
+    Additionally:
+    constants._PRESET_TAGS : dict
+        Dictionary of preset seed point tags.
+
+    Returns
+    -------
+    import_files : defaultdict
+        Defaultdict of file names to import.
+
+    """
+    if type(city_query) != str:
+        raise TypeError("city_query must be a string")
+    if type(radius) != int:
+        raise TypeError("radius must be an integer")
+    if type(mingap) != int:
+        raise TypeError("mingap must be an integer")
+    if type(maxgap) != int:
+        raise TypeError("maxgap must be an integer")
+    if type(export_data) is not bool:
+        raise TypeError("export_data must be a boolean")
+    if export_file_format != "geojson" and export_file_format != "gpkg":
+        raise ValueError("export_file_format must be 'geojson' or 'gpkg'")
+    if type(import_files) is not dict:
+        raise TypeError("import_files must be a dictionary")
+    # Prepare special case import_files. Turn it into a defaultdict where missing keys are None.
+    import_files = defaultdict(lambda: None, import_files)
+
+    return import_files
+
+def _validate_settings():
+    """ Check if user settings input is valid. If not, raise an exception or 
+    warning.
+
+    Returns
+    -------
+    setting_was_auto : dict
+        Dictionary remembering which setting or constant was set to auto, so 
+        it can be reset to auto in the end.
+    """
+
+    if type(constants._CRS_CALCULATIONS) is not str:
+        raise TypeError("constants._CRS_CALCULATIONS must be a string")
+
+    setting_was_auto = {'crs_calculations': False}
+    # Ask whether constants._CRS_CALCULATIONS was 'auto'
+    if constants._CRS_CALCULATIONS == 'auto':
+        setting_was_auto['crs_calculations'] = True
+    return setting_was_auto
+
+def _resolve_crs_calculations(gdf):
+    """ Resolve constants._CRS_CALCULATIONS = 'auto'
+    
+    Parameters
+    ----------
+    gdf : geopandas.geodataframe.GeoDataFrame
+        A geodataframe from which to estimate the UTM CRS
+    """
+    if constants._CRS_CALCULATIONS == 'auto':
+        constants._CRS_CALCULATIONS = gdf.estimate_utm_crs()
+
+def _reset_auto_settings(setting_was_auto):
+    """Reset settings and constants to auto.
+    """
+    if setting_was_auto['crs_calculations']:
+        constants._CRS_CALCULATIONS = 'auto'
+
 def _print_header(city_query):
     """Print header.
     """

@@ -6,11 +6,11 @@ fbn.settings.import_path = '../dataexport/cities/cityexport/'
 fbn.constants._BETWEENNESS_RANDOM_NODES = 300
 
 gaps = fbn.fixbikenet(
-    city_query="Copenhagen",
+    city_query="Frederiksberg Municipality",
     export_file_format="geojson",
-    maxgap = 1000,
+    maxgap = 800,
     import_files = {
-        'street_network': 'streetbike_networks/copenhagen_dk.gpkg',
+        'street_network': 'streetbike_networks/frederiksberg_dk.gpkg',
     },
 )
 
