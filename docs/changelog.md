@@ -1,3 +1,19 @@
+## Version 0.8.0 (2026-09-03)
+
+- 🐛 Fixed bug with declustering
+- ✨ Added city boundary import
+- ✅ Added test_main
+- 🐛 Made PBI tagging consistent with custom filters
+- ✨ Added street name export
+- ✨ Added minimum gap length option
+- ⚡️ Optimized bottlenecks
+- 🐛 Fixed bug with non-metric CRS, now estimating UTM
+- 💄 Added tqdm progress bars with silent mode
+- ➖ Removed unneeded dependencies and extensions
+- 📄 Upgraded license to AGPL
+- ⬆️ Upgraded dependencies and Python versions
+- 🔧 Updated project metadata
+
 ## Version 0.7.0 (2026-06-25)
 
 - 🔧 moved from config.yml to config.py setup in package
