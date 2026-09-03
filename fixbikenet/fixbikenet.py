@@ -38,6 +38,7 @@ def fixbikenet(
     city_query,
     proj_crs = "3857",
     radius = 2500,
+    mingap = 20,
     maxgap = 1000,
     export_data = True,
     city_id = None,
@@ -55,8 +56,10 @@ def fixbikenet(
         coordinate reference system that is used to project osm data. Default is '3857' (WGS 84 / Pseudo-Mercator)
     radius : int, default 2500
         cut-off length for computation of local betweenness centrality, in meters
+    mingap : int, default 20
+        minimum distance between node pairs to be considered as a potential gap, in meters
     maxgap : int, default 1000
-        maximum distance between node pairs to be considered as a potential gap
+        maximum distance between node pairs to be considered as a potential gap, in meters
     export_data : bool, optional, default True
         If set to True, data will be saved to a file. The filename is [slug].gpkg, where slug is a string id made out of city_name
     city_id : str | None, default None
@@ -95,6 +98,8 @@ def fixbikenet(
         raise TypeError("proj_crs must be a string")
     if type(radius) != int:
         raise TypeError("radius must be an integer")
+    if type(mingap) != int:
+        raise TypeError("mingap must be an integer")
     if type(maxgap) != int:
         raise TypeError("maxgap must be an integer")
     if type(export_data) is not bool:
@@ -150,7 +155,7 @@ def fixbikenet(
     potential_gaps = find_potential_gaps(contact_nodes, nodes_gdf, maxgap)
 
     # add routing for gaps in network
-    found_gaps, found_gaps_nsp = find_actual_gaps(G, potential_gaps)
+    found_gaps, found_gaps_nsp = find_actual_gaps(G, potential_gaps, mingap)
 
     # calculating local betweenness score dependent on radius
     ebc = compute_local_betweenness_centrality(G, nodes_gdf, radius)
