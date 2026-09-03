@@ -28,7 +28,6 @@ def _validate_parameters(
         mingap,
         maxgap,
         export_data,
-        export_file_format,
         import_files,
     ):
     """ Check if user parameter input is valid. If not, raise an exception or 
@@ -57,8 +56,6 @@ def _validate_parameters(
         raise TypeError("maxgap must be an integer")
     if type(export_data) is not bool:
         raise TypeError("export_data must be a boolean")
-    if export_file_format != "geojson" and export_file_format != "gpkg":
-        raise ValueError("export_file_format must be 'geojson' or 'gpkg'")
     
     if type(import_files) is not dict:
         raise TypeError("import_files must be a dictionary")
@@ -85,6 +82,8 @@ def _validate_settings():
 
     if type(constants._CRS_CALCULATIONS) is not str:
         raise TypeError("constants._CRS_CALCULATIONS must be a string")
+    if settings.export_file_format != "geojson" and settings.export_file_format != "gpkg":
+        raise ValueError("settings.export_file_format must be 'geojson' or 'gpkg'")
 
     setting_was_auto = {'crs_calculations': False}
     # Ask whether constants._CRS_CALCULATIONS was 'auto'

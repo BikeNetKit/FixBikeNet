@@ -45,7 +45,6 @@ def fixbikenet(
     numgaps = 50,
     export_data = True,
     city_id = None,
-    export_file_format="geojson",
     export_plot=False,
     import_files={},
 ):
@@ -68,8 +67,6 @@ def fixbikenet(
         If set to True, data will be saved to a file. The filename is [slug].gpkg, where slug is a string id made out of city_name
     city_id : str | None, default None
         If set, the slugified city_id is used in the filename of the data export. For example, a city_id "Athens" will slugify into "athens" in filenames. If set to None, the slugified city_query is used in the filename of the data export. It is useful to set a city_id for cities where the city_query is not the city name, for example to set for a city_query "Municipality of Athens" the city_id to "Athens".
-    export_file_format : str, optional, default "geojson"
-        File format for the data export, relevant if export_data set to True. Default "geojson", also possible "gpkg". If exporting as geojson, generates extra files for street network and city boundary. If exporting as gkpg, these are added all in one file as extra layers.
     export_plot : bool, optional, default False
         If set to True, plot will be saved to a file
     import_files: dict, default {}
@@ -100,7 +97,7 @@ def fixbikenet(
     starttime = time.time()
     np.random.seed(settings.random_seed)  # Set random number generator seed for reproducibility
     setting_was_auto = _validate_settings()
-    import_files = _validate_parameters(city_query, radius, mingap, maxgap, export_data, export_file_format, import_files)
+    import_files = _validate_parameters(city_query, radius, mingap, maxgap, export_data, import_files)
     _print_header(city_query)
     
     # Get city boundary 
@@ -212,6 +209,8 @@ def fixbikenet(
     gaps_ordered.to_crs(epsg=4326, inplace=True)
     edges_pbi_gdf.to_crs(epsg=4326, inplace=True)
     edges_gdf.to_crs(epsg=4326, inplace=True)
+    gaps_ordered = gaps_ordered[['path', 'benefit', 'name', 'edge_list', 'source', 'target', 'ordering', 'length', 'geometry']]
+
     progress_bar.update(1)
     progress_bar.close()
 
@@ -223,14 +222,14 @@ def fixbikenet(
         else:
             city_string = city_id
         export_data_filename = (
-                slugify(city_string) + "-fixbikenet-gaps" + "." + export_file_format
+                slugify(city_string) + "-fixbikenet-gaps" + "." + settings.export_file_format
         )
 
     if export_data:
         edges_pbi_gdf.drop(["osmid"], axis=1, inplace=True)
         edges_gdf.drop(["osmid"], axis=1, inplace=True)
         city_boundary.to_crs(epsg=4326, inplace=True)
-        if export_file_format == "geojson":
+        if settings.export_file_format == "geojson":
             progress_bar = initialize_progress_bar("Exporting data", 4, "file")
             gaps_ordered.to_file(settings.export_path + export_data_filename, driver="GeoJSON", RFC7946="YES")
             progress_bar.update(1)
@@ -240,12 +239,15 @@ def fixbikenet(
             progress_bar.update(1)
             city_boundary.to_file(settings.export_path + slugify(city_string) + "-city_boundary.geojson", driver="GeoJSON", RFC7946="YES")
             progress_bar.update(1)
-        elif export_file_format == "gpkg":
+        elif settings.export_file_format == "gpkg":
+            f = settings.export_path + export_data_filename
+            if os.path.exists(f):
+                os.remove(f) # mode="w" does not work for to_file with gpkg. It always appends. Therefore, existing file needs to be deleted.
             progress_bar = initialize_progress_bar("Exporting data", 1, "file")
-            gaps_ordered.to_file(settings.export_path + export_data_filename, driver="GPKG", layer="Identified gaps")
-            edges_pbi_gdf.to_file(settings.export_path + export_data_filename, driver="GPKG", layer="Existing bike network", append=True)
-            edges_gdf.to_file(settings.export_path + export_data_filename, driver="GPKG", layer="Existing street network", append=True)
-            city_boundary.to_file(settings.export_path + export_data_filename, driver="GPKG", layer="City boundary", append=True)
+            gaps_ordered.to_file(f, driver="GPKG", layer="Identified gaps")
+            edges_pbi_gdf.to_file(f, driver="GPKG", layer="Existing bike network", append=True)
+            edges_gdf.to_file(f, driver="GPKG", layer="Existing street network", append=True)
+            city_boundary.to_file(f, driver="GPKG", layer="City boundary", append=True)
             progress_bar.update(1)
         progress_bar.close()
 
