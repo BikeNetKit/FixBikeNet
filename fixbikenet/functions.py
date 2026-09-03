@@ -388,6 +388,7 @@ def find_actual_gaps(G, potential_gaps, mingap):
 
     found_gaps = []
     found_gaps_nsp = []
+    found_gaps_name = []
 
     for u, v in tqdm(
             potential_gaps,
@@ -420,8 +421,9 @@ def find_actual_gaps(G, potential_gaps, mingap):
         if valid and nx.shortest_path_length(G, u, v, weight="length") >= mingap:
             found_gaps.append((u, v))
             found_gaps_nsp.append(nodelist)
+            found_gaps_name.append(G[nodelist[0]][nodelist[1]]["name"])
 
-    return found_gaps, found_gaps_nsp
+    return found_gaps, found_gaps_nsp, found_gaps_name
 
 def compute_local_betweenness_centrality(G, nodes_gdf, radius):
     """
@@ -671,6 +673,8 @@ def gap_declustering(gaps_df, G, ebc, contact_nodes):
     result: pd.DataFrame
         Dataframe with node path for gaps and the newly calculated benefit metric
     """
+    print(gaps_df.head())
+    print(gaps_df.loc[gaps_df['gap'] == (576734, 982458401), 'name'][0])
     C = nx.Graph()
     C.graph.update(G.graph)
     gap_edges = set()
@@ -698,6 +702,7 @@ def gap_declustering(gaps_df, G, ebc, contact_nodes):
     ]
     selected_paths = []
     selected_scores = []
+    selected_names = []
 
     for comp in tqdm(
             components,
@@ -744,6 +749,10 @@ def gap_declustering(gaps_df, G, ebc, contact_nodes):
             # Store selected gap
             selected_paths.append(best_path)
             selected_scores.append(best_score)
+            try:
+                selected_names.append(gaps_df.loc[gaps_df['gap'] == (best_path[0], best_path[-1]), 'name'].values[0])
+            except:
+                selected_names.append("n/a")
 
             # Remove selected path
             edge_path = list(
@@ -757,6 +766,7 @@ def gap_declustering(gaps_df, G, ebc, contact_nodes):
         {
             "path": selected_paths,
             "benefit": selected_scores,
+            "name": selected_names
         }
     )
     return result

@@ -161,7 +161,7 @@ def fixbikenet(
     potential_gaps = find_potential_gaps(contact_nodes, nodes_gdf, maxgap)
 
     # add routing for gaps in network
-    found_gaps, found_gaps_nsp = find_actual_gaps(G, potential_gaps, mingap)
+    found_gaps, found_gaps_nsp, found_gaps_name = find_actual_gaps(G, potential_gaps, mingap)
 
     # calculating local betweenness score dependent on radius
     ebc = compute_local_betweenness_centrality(G, nodes_gdf, radius)
@@ -171,6 +171,7 @@ def fixbikenet(
     df = pd.DataFrame(
         {
             "gap": found_gaps,
+            "name": found_gaps_name,
             "benefit": Bs,
             "nodelist": found_gaps_nsp
         }
