@@ -404,7 +404,15 @@ def rank_gaps_by_b(found_gaps_nsp, G, ebc):
         list of values of b for all gaps in protected bicycle network
     """
     Bs = []
-    for nodelist in found_gaps_nsp:
+    for nodelist in tqdm(
+            found_gaps_nsp,
+            desc=("{:<"+str(constants._PROGRESS_BAR_DESC_LENGTH)+"}").format("Ordering gaps"),
+            leave=True,
+            unit="gap",
+            total=len(found_gaps_nsp),
+            bar_format='{l_bar}{bar:'+str(constants._PROGRESS_BAR_LENGTH-7)+'}{r_bar}',
+            disable=settings.silent,
+        ):
         edgelist = [tuple(sorted(z)) for z in zip(nodelist, nodelist[1:])]
         lengths = np.array([G.edges[edge]["length"] for edge in edgelist])
         #ebcs = np.array([ebc[edge] for edge in edgelist])
@@ -574,6 +582,7 @@ def gap_declustering(gaps_df, G, ebc, contact_nodes):
     C = nx.Graph()
     C.graph.update(G.graph)
     gap_edges = set()
+    contact_nodes = set(contact_nodes)
 
     # collect all edges used by the gap paths
     for nodelist in gaps_df["nodelist"]:
@@ -609,11 +618,7 @@ def gap_declustering(gaps_df, G, ebc, contact_nodes):
         ):
         while comp.number_of_edges() > 0:
             # contact nodes (in the paper it says degree != 2, but contact nodes work better)
-            terminals = [
-                n
-                for n in comp.nodes()
-                if n in contact_nodes
-            ]
+            terminals = [set(comp.nodes()) & contact_nodes]
             candidate_paths = []
             # shortest paths between all terminal pairs
             for source, target in itertools.combinations(terminals, 2):
