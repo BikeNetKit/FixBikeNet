@@ -164,6 +164,10 @@ def fixbikenet(
     )
     df = df.sort_values(by="benefit", ascending=False).reset_index(drop=True)
 
+    # only keep the 500 most important gaps before declustering. If there are fewer than 500 gaps keep only those
+    if df.shape[0] > 500:
+        df = df.iloc[:500]
+
     #decluster edges
     gap_df = gap_declustering(df, G, ebc, contact_nodes)
     gap_df = gap_df.sort_values(by="benefit", ascending=False).reset_index(drop=True)

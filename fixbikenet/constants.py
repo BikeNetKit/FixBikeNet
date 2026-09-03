@@ -2,18 +2,23 @@
 should not be changed later by the user. Especially technical or internal 
 constants start with an underscore.
 
-_ROUTING_PENALTY : dict, default {0: 1.5, 1: 1}
-    Factor to multiply length of non-pbi/pbi for routing, to avoid routing
-    through parallel streets when slightly longer pbi is available. By 
-    default, non-pbi counts as 50% longer than pbi.
-_PROGRESS_BAR_LENGTH : int, default 23
-    Character length of tqdm progress bars.
+
+_BETWEENNESS_RANDOM_NODES : int, default 300
+    Number of random nodes to select for local betweenness calculations, for
+    computational reasons.
 _PROGRESS_BAR_DESC_LENGTH : int, default 23
     Character length of tqdm progress bar descriptions. This is the space given 
     to text like "Importing network data ", which is at the maximum of 23 
     characters.
+_PROGRESS_BAR_LENGTH : int, default 23
+    Character length of tqdm progress bars.
+_ROUTING_PENALTY : dict, default {0: 1.5, 1: 1}
+    Factor to multiply length of non-pbi/pbi for routing, to avoid routing
+    through parallel streets when slightly longer pbi is available. By 
+    default, non-pbi counts as 50% longer than pbi.
 """
 
-_ROUTING_PENALTY = {0: 1.5, 1: 1}
-_PROGRESS_BAR_LENGTH = 23
+_BETWEENNESS_RANDOM_NODES = 300
 _PROGRESS_BAR_DESC_LENGTH = 24
+_PROGRESS_BAR_LENGTH = 23
+_ROUTING_PENALTY = {0: 1.5, 1: 1}

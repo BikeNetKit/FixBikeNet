@@ -357,9 +357,10 @@ def compute_local_betweenness_centrality(G, nodes_gdf, radius):
     # create dict that will be updated at each step
     ebc = nx.get_edge_attributes(G, "ebc")
 
-    # for each node, compute "local" ebc (buffered with radius!)
-    # for comp feas, now only subset of randomly drawn 300 nodes
-    random_nodes = np.random.choice(list(G.nodes), size=300)
+    # For each node, compute "local" ebc (buffered with radius!)
+    # For computational reasons, only over a subset of randomly drawn 
+    # constants._BETWEENNESS_RANDOM_NODES nodes
+    random_nodes = np.random.choice(list(G.nodes), size=constants._BETWEENNESS_RANDOM_NODES)
     for node in tqdm(
             random_nodes,
             desc=("{:<"+str(constants._PROGRESS_BAR_DESC_LENGTH)+"}").format("Calculating betweenness"),
@@ -618,7 +619,7 @@ def gap_declustering(gaps_df, G, ebc, contact_nodes):
         ):
         while comp.number_of_edges() > 0:
             # contact nodes (in the paper it says degree != 2, but contact nodes work better)
-            terminals = [set(comp.nodes()) & contact_nodes]
+            terminals = list(set(comp.nodes()) & contact_nodes)
             candidate_paths = []
             # shortest paths between all terminal pairs
             for source, target in itertools.combinations(terminals, 2):
