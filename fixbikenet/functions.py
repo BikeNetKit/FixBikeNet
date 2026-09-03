@@ -698,6 +698,7 @@ def gap_declustering(gaps_df, G, ebc, contact_nodes):
     ]
     selected_paths = []
     selected_scores = []
+    selected_names = []
 
     for comp in tqdm(
             components,
@@ -741,9 +742,23 @@ def gap_declustering(gaps_df, G, ebc, contact_nodes):
                     best_path = path
             if best_path is None:
                 break
+
             # Store selected gap
             selected_paths.append(best_path)
             selected_scores.append(best_score)
+
+            # Walk through edges until finding a name
+            name = "n/a"
+            for i in [-1]+list(range(len(best_path))):
+                try: 
+                    name = G[best_path[i]][best_path[i+1]]['name']
+                except:
+                    pass
+                if name != "" and name != "n/a":
+                    break
+            if name == "":
+                name = "n/a"
+            selected_names.append(name)
 
             # Remove selected path
             edge_path = list(
@@ -757,6 +772,7 @@ def gap_declustering(gaps_df, G, ebc, contact_nodes):
         {
             "path": selected_paths,
             "benefit": selected_scores,
+            "name": selected_names
         }
     )
     return result
