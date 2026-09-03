@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python>=3.12
-  - osmnx>=1.9.4
+  - osmnx>=2
   - tqdm
 
   # additional to the non-dev env

@@ -6,45 +6,50 @@ build-backend = "setuptools.build_meta"
 name = "fixbikenet"
 version = "0.7.0"
 authors = [
-  { name = "Manuel Knepper" },
-  { name = "Anastassia Vybornova" },
-  { name = "Michael Szell" },
+  {name = "Manuel Knepper"},
+  {name = "Anastassia Vybornova"},
+  {name = "Michael Szell", email = "michael@szell.net"},
 ]
-maintainers = [{ name = "Manuel Knepper", email = "manuel.knepper@gmx.net" }]
+maintainers = [
+  {name = "Michael Szell", email = "michael@szell.net"},
+]
 license = "AGPL-3.0-or-later"
 readme = "README.md"
 description = "BikeNetKit Python package to detect gaps in developed bicycle networks"
 keywords = ["Bicycle network planning", "Networks", "OpenStreetMap", "Urban Planning", "Urban Mobility"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
+    "Intended Audience :: Other Audience",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Natural Language :: English",
+    "Topic :: Scientific/Engineering :: GIS",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
-    "geopandas>=0.14",
+    "geopandas>=1",
     "matplotlib",
-    "osmnx>=1.9.4",
+    "osmnx>=2",
     "geojson",
     "tqdm",
-    "pip",
-    "momepy",
 ]
 
 [project.urls]
+Homepage = "https://bikenetkit.org/"
+Documentation = "https://docs.bikenetkit.org/FixBikeNet/"
 Repository = "https://github.com/BikeNetKit/FixBikeNet"
 Issues = "https://github.com/BikeNetKit/FixBikeNet/issues"
+Changelog = "https://docs.bikenetkit.org/FixBikeNet/changelog/"
 
 [project.optional-dependencies]
 test = ["pytest"]
-doc = ["sphinx", "momepy"]
+doc = ["sphinx"]
 
 [tool.ruff.lint.extend-per-file-ignores]
 "__init__.py" = ["F401"]  # "Imported but unused: happens with packages
