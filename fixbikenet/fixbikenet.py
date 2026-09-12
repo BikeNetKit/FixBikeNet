@@ -75,10 +75,10 @@ def fixbikenet(
         The following key:value entries can be set:
 
             - 'city_boundary' : None or str, default None
-            If not set to None, the study area is selected from the 
-            (Multi)Polygon provided in the city_boundary shape or gpkg file, 
-            ideally in unprojected latitude-longitude degrees (EPSG:4326), but 
-            EPSG:3857 also works.
+                If not set to None, the study area is selected from the 
+                (Multi)Polygon provided in the city_boundary shape or gpkg file, 
+                ideally in unprojected latitude-longitude degrees (EPSG:4326), but 
+                EPSG:3857 also works.
             - 'street_network' : str | None, default None
                 If not set to None, the street network is loaded from this file. Must be a gpkg file in unprojected crs EPSG:4326 with layers nodes and edges, with the structure that an undirected osmnx street network g has after saved via ox.io.save_graph_geopackage(). For example:
                 >>> ox.settings.useful_tags_way = ["highway", "cycleway", "cycleway:right", "cycleway:left", "cycleway:both", "cyclestreet"]
