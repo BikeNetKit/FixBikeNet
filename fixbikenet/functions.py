@@ -18,7 +18,7 @@ import geopandas as gpd
 import networkx as nx
 import osmnx as ox
 from shapely.geometry import LineString, Point
-from tqdm.auto import tqdm
+from tqdm import tqdm
 
 
 def _validate_parameters(
