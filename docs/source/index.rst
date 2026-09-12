@@ -76,4 +76,4 @@ Documentation contents
    getting_started
    reference_user
    reference_developer
-   references
+   changelog

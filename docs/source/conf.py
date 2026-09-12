@@ -7,8 +7,8 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "FixBikeNet"
-copyright = "2026, FixBikeNet developers"
-author = "Szell, Vybornova, Knepper"
+copyright = "2026, FixBikeNet contributors"
+author = "FixBikeNet contributors"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 from tomllib import load as toml_load
 
-sys.path.insert(0, os.path.abspath(".."))
+sys.path.insert(0, os.path.abspath("../.."))
 import fixbikenet
 
 # dynamically load version
@@ -42,18 +42,26 @@ extensions = [
     "IPython.sphinxext.ipython_console_highlighting",
     "sphinx_copybutton",
 ]
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.ipynb': 'myst-nb',
+    '.myst': 'myst-nb',
+}
+myst_enable_extensions = ["html_admonition"]
+nb_execution_mode = 'auto'
+nb_execution_allow_errors = False # Let's be strict so we don't publish completely broken docs
+nb_execution_timeout = 5 # 120 for rebuild, 5 for preexecuted
+nb_output_stderr = 'remove' # For debugging, it is better to 'show'! If errors should be hidden, 'remove'
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
-# path to bib file with references
-bibtex_bibfiles = ["_static/references.bib"]
-bibtex_reference_style = "author_year"
-bibtex_default_style = 'plain'
-
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 html_static_path = ["_static"]
+html_css_files = [
+    'css/dataframe.css',
+]
 
 ### select html theme
 html_theme = "furo"

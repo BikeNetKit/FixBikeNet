@@ -1,5 +1,6 @@
 # <a href="https://docs.bikenetkit.org/FixBikeNet/"><img src="https://github.com/BikeNetKit/FixBikeNet/raw/main/docs/source/_static/logo_fixbikenet.svg" alt="FixBikeNet" width="254.65" height="59"></a>
 
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/fixbikenet?color=10d249)](https://anaconda.org/conda-forge/growbikenet)
 [![PyPI Version](https://img.shields.io/pypi/v/fixbikenet?color=10d249)](https://pypi.org/project/FixBikeNet/)
 [![Docs](https://github.com/BikeNetKit/FixBikeNet/actions/workflows/docs.yml/badge.svg)](https://bikenetkit.github.io/FixBikeNet/)
 [![Test](https://github.com/BikeNetKit/FixBikeNet/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/BikeNetKit/FixBikeNet/actions/workflows/test.yml)
@@ -18,22 +19,11 @@ For alternative approaches, or for cities with less developed bicycle networks, 
 
 ### The easy way
 
-The currently recommended way to install FixBikeNet is using pip:
+The currently recommended way to install FixBikeNet is using [`conda`](https://docs.conda.io/projects/conda/en/latest/index.html):
 
 ```
-pip install fixbikenet
+conda install fixbikenet
 ```
-
-<!-- > [!IMPORTANT]  
-> As of 2026-05-04, the conda-forge installation is not yet working. We will remove this note once it works.
-
-The best way to install FixBikeNet is using [`conda`](https://docs.conda.io/projects/conda/en/latest/index.html) and the `conda-forge` channel:
-
-```
-conda install -c conda-forge fixbikenet
-``` -->
-
-If this does not work, consult our [installation docs](https://docs.bikenetkit.org/FixBikeNet/installation/).
 
 ### Advanced and development installations
  See our [installation docs](https://docs.bikenetkit.org/FixBikeNet/installation/) for details.
