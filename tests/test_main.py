@@ -1,8 +1,8 @@
-import pytest
 import geopandas as gpd
-import osmnx as ox
-import fixbikenet as fbn
+import pytest
 from pandas.testing import assert_frame_equal
+
+import fixbikenet as fbn
 
 fbn.constants._CRS_CALCULATIONS = 'auto'
 fbn.constants._BETWEENNESS_RANDOM_NODES = 100

@@ -1,19 +1,25 @@
-from . import constants
-from . import settings
 import os
-import numpy as np
-import networkx as nx
-import osmnx as ox
+
 import geopandas as gpd
+import networkx as nx
+import numpy as np
+import osmnx as ox
 import pandas as pd
+
+from . import constants, settings
+
 pd.set_option('display.max_columns', None) # for debugging
-import warnings
-from tqdm.auto import tqdm
+import sys  # noqa: F401, use sys.exit() for debugging
 import time
-import sys # use sys.exit() for debugging
+
 import matplotlib.pyplot as plt
-from collections import defaultdict
+
 from fixbikenet.functions import (
+    _print_footer,
+    _print_header,
+    _resolve_crs_calculations,
+    _validate_parameters,
+    _validate_settings,
     compute_local_betweenness_centrality,
     create_gdf_with_geoms,
     find_actual_gaps,
@@ -22,20 +28,16 @@ from fixbikenet.functions import (
     find_potential_gaps,
     gap_declustering,
     get_correct_edgetuples,
-    graph_nodes_to_gdf,
     graph_edges_to_gdf,
+    graph_nodes_to_gdf,
     import_network,
     initialize_progress_bar,
-    rank_gaps_by_b,
     map_edges_to_bike_infrastructure,
+    rank_gaps_by_b,
     slugify,
     weigh_edges,
-    _print_footer,
-    _print_header,
-    _resolve_crs_calculations,
-    _validate_parameters,
-    _validate_settings,
 )
+
 
 def fixbikenet(
     city_query,
@@ -257,7 +259,7 @@ def fixbikenet(
             edges_pbi_gdf.plot(ax=ax, color="grey")
             gaps_ordered.plot(ax=ax, color="red")
             ax.set_axis_off()
-            fig.savefig(f"./results/plots/"+export_data_filename+".png", dpi=150, bbox_inches='tight')
+            fig.savefig("./results/plots/"+export_data_filename+".png", dpi=150, bbox_inches='tight')
             plt.close()
 
     # Cleanup, finalize

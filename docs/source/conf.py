@@ -13,13 +13,13 @@ author = "Szell, Vybornova, Knepper"
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-import os  # noqa
-import sys  # noqa
-from pathlib import Path  # noqa
-from tomllib import load as toml_load  # noqa
+import os
+import sys
+from pathlib import Path
+from tomllib import load as toml_load
 
 sys.path.insert(0, os.path.abspath(".."))
-import fixbikenet  # noqa
+import fixbikenet
 
 # dynamically load version
 with Path("../../pyproject.toml").open("rb") as f:
@@ -125,7 +125,7 @@ nbsphinx_prolog = r"""
         | This page was generated from `{{ docname }}`__.
 
         __ https://github.com/BikeNetKit/FixBikeNet/blob/main/docs/source/{{ docname }}
-"""  # noqa: E501
+"""
 
 
 def linkcode_resolve(domain, info):
