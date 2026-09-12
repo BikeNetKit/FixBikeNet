@@ -4,16 +4,15 @@ import fixbikenet as fbn
 
 fbn.settings.import_path = '../dataexport/cities/cityexport/'
 fbn.constants._BETWEENNESS_RANDOM_NODES = 100
+fbn.settings.export_file_format = 'geojson'
+
+city = "paris_fr"
 
 gaps = fbn.fixbikenet(
-    city_query="Frederiksberg",
-    radius = 1000,
-    mingap = 0,
-    maxgap = 500,
-    numgaps = 20,
+    city_query = city,
     import_files = {
-        'city_boundary': 'boundaries/frederiksberg_dk.geojson',
-        'street_network': 'streetbike_networks/frederiksberg_dk.gpkg',
+        'city_boundary': 'boundaries/'+city+'.geojson',
+        'street_network': 'streetbike_networks/'+city+'.gpkg',
     },
 )
 

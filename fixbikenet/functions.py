@@ -1,25 +1,24 @@
 """Utility functions for `fixbikenet`."""
 
-from . import constants
-from . import settings
-from . import config
-import os
 import itertools
-from collections import defaultdict
+import os
 import re
+from collections import defaultdict
+
 import numpy as np
 import pandas as pd
+
+from . import config, constants, settings
+
 pd.set_option('display.max_columns', None) # for debugging
+import datetime
+import sys  # noqa: F401, use sys.exit() for debugging
+
 import geopandas as gpd
-import warnings
 import networkx as nx
 import osmnx as ox
-import shapely
-from shapely.geometry import Point, LineString, MultiLineString
-from pyproj import Transformer
+from shapely.geometry import LineString, Point
 from tqdm.auto import tqdm
-import datetime
-import sys # use sys.exit() for debugging
 
 
 def _validate_parameters(
@@ -198,19 +197,7 @@ def map_edges_to_bike_infrastructure(g):
 
     # add binary edge attribute "pbi" (protected bike infra: True/False)
     for edge in g.edges(keys=True):
-        if g.edges[edge].get("cycleway") in config.cycleway_bike_infra:
-            g.edges[edge]["pbi"] = 1
-        elif g.edges[edge].get("cycleway:right") in config.cycleway_right_bike_infra:
-            g.edges[edge]["pbi"] = 1
-        elif g.edges[edge].get("cycleway:left") in config.cycleway_left_bike_infra:
-            g.edges[edge]["pbi"] = 1
-        elif g.edges[edge].get("cycleway:both") in config.cycleway_both_bike_infra:
-            g.edges[edge]["pbi"] = 1
-        elif g.edges[edge].get("highway") in config.highway_bike_infra:
-            g.edges[edge]["pbi"] = 1
-        elif g.edges[edge].get("cyclestreet"):
-            g.edges[edge]["pbi"] = 1
-        elif g.edges[edge].get("highway") in config.highway_bike_infra_extended and g.edges[edge].get("bicycle") in config.bicycle_bike_infra and g.edges[edge].get("access") != 'private':
+        if g.edges[edge].get("cycleway") in config.cycleway_bike_infra or g.edges[edge].get("cycleway:right") in config.cycleway_right_bike_infra or g.edges[edge].get("cycleway:left") in config.cycleway_left_bike_infra or g.edges[edge].get("cycleway:both") in config.cycleway_both_bike_infra or g.edges[edge].get("highway") in config.highway_bike_infra or g.edges[edge].get("cyclestreet") or g.edges[edge].get("highway") in config.highway_bike_infra_extended and g.edges[edge].get("bicycle") in config.bicycle_bike_infra and g.edges[edge].get("access") != 'private':
             g.edges[edge]["pbi"] = 1
         else:
             g.edges[edge]["pbi"] = 0

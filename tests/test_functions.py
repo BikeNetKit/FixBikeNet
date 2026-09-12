@@ -1,12 +1,9 @@
-from fixbikenet import settings
-from fixbikenet import constants
-from fixbikenet import config
+import geopandas as gpd
 import pytest
 from networkx.utils.misc import graphs_equal
-import geopandas as gpd
 from shapely.geometry import Point
-import fixbikenet as fbn
 
+import fixbikenet as fbn
 from fixbikenet.functions import *
 
 fbn.constants._ROUTING_PENALTY = {0: 5, 1: 1}
