@@ -216,6 +216,16 @@ def fixbikenet(
     progress_bar.update(1)
     progress_bar.close()
 
+    # Cleanup
+    keepedgedata = ['length', 'geometry']
+    keepgapdata = ['source', 'target', 'benefit', 'name', 'ordering', 'length', 'geometry']
+    for p in edges_pbi_gdf.keys():
+        if p not in keepedgedata:
+            del edges_pbi_gdf[p] 
+    for p in gaps_ordered.keys():
+            if p not in keepgapdata:
+                del gaps_ordered[p] 
+
     # Generate export data filename
     if export_data:
         os.makedirs(settings.export_path, exist_ok=True)
@@ -228,7 +238,6 @@ def fixbikenet(
         )
 
     if export_data:
-        edges_pbi_gdf.drop(["osmid"], axis=1, inplace=True)
         edges_gdf.drop(["osmid"], axis=1, inplace=True)
         city_boundary.to_crs(epsg=4326, inplace=True)
         if settings.export_file_format == "geojson":
