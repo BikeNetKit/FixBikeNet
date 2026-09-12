@@ -1,5 +1,15 @@
 # Changelog
 
+## Version 0.8.1 (2026-09-12)
+
+- 🐛 Add bicycle_road to pbi mapping
+- 🐛 Fixed ruff-check in pre-commit hooks
+- 💄 Made tqdm bars consistent in notebooks
+- 💄 Polished exported filenames
+- 🎨 Cleaned up exported files
+- 📄 Updated docs to account for conda
+- 📄 Established docs parity with growbikenet
+
 ## Version 0.8.0 (2026-09-03)
 
 - 🐛 Fixed bug with declustering

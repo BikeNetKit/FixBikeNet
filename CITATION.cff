@@ -10,8 +10,8 @@ authors:
   given-names: "Michael"
   orcid: "https://orcid.org/0000-0003-3022-2483"
 title: "FixBikeNet"
-version: 0.8.0
-date-released: 2026-09-03
+version: 0.8.1
+date-released: 2026-09-12
 url: "https://github.com/BikeNetKit/FixBikeNet"
 preferred-citation:
   type: article
