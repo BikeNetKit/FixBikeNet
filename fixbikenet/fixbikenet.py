@@ -235,11 +235,11 @@ def fixbikenet(
             progress_bar = initialize_progress_bar("Exporting data", 4, "file")
             gaps_ordered.to_file(settings.export_path + export_data_filename, driver="GeoJSON", RFC7946="YES")
             progress_bar.update(1)
-            edges_pbi_gdf.to_file(settings.export_path + slugify(city_string) + "-fixbikenet" +  "-existing_bike_network.geojson", driver="GeoJSON", RFC7946="YES")
+            edges_pbi_gdf.to_file(settings.export_path + slugify(city_string) + "-fixbikenet-existing_bike_network.geojson", driver="GeoJSON", RFC7946="YES")
             progress_bar.update(1)
-            edges_gdf.to_file(settings.export_path + slugify(city_string) + "-fixbikenet" + "-existing_street_network.geojson", driver="GeoJSON", RFC7946="YES")
+            edges_gdf.to_file(settings.export_path + slugify(city_string) + "-fixbikenet-existing_street_network.geojson", driver="GeoJSON", RFC7946="YES")
             progress_bar.update(1)
-            city_boundary.to_file(settings.export_path + slugify(city_string) + "-city_boundary.geojson", driver="GeoJSON", RFC7946="YES")
+            city_boundary.to_file(settings.export_path + slugify(city_string) + "-fixbikenet-city_boundary.geojson", driver="GeoJSON", RFC7946="YES")
             progress_bar.update(1)
         elif settings.export_file_format == "gpkg":
             f = settings.export_path + export_data_filename
