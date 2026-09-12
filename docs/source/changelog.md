@@ -6,7 +6,7 @@
 - 🐛 Fixed ruff-check in pre-commit hooks
 - 💄 Made tqdm bars consistent in notebooks
 - 💄 Polished exported filenames
-- 🎨 Clenaed up exported files
+- 🎨 Cleaned up exported files
 - 📄 Updated docs to account for conda
 - 📄 Established docs parity with growbikenet
 
