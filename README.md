@@ -5,6 +5,7 @@
 [![Docs](https://github.com/BikeNetKit/FixBikeNet/actions/workflows/docs.yml/badge.svg)](https://bikenetkit.github.io/FixBikeNet/)
 [![Test](https://github.com/BikeNetKit/FixBikeNet/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/BikeNetKit/FixBikeNet/actions/workflows/test.yml)
 [![Code coverage](https://codecov.io/gh/BikeNetKit/FixBikeNet/graph/badge.svg)](https://codecov.io/gh/BikeNetKit/FixBikeNet)
+[![Mastodon Follow](https://img.shields.io/mastodon/follow/116693348622375119?domain=https%3A%2F%2Ffosstodon.org)](https://fosstodon.org/@BikeNetKit)
 
 The Python package `fixbikenet` identifies the most important gaps to fill in a city's bicycle network. You can download street and bike network data with a single line of code, simulate different bicycle network fixing scenarios, and export and plot the resulting prioritized gaps.
 
