@@ -42,11 +42,10 @@ We provide a minimum working example in two formats:
 ## Docs
 Find more information in our docs: [https://docs.bikenetkit.org/FixBikeNet/](https://docs.bikenetkit.org/FixBikeNet/)
 
-## Source
+## Origin
 The source code builds on [the code from the research paper](https://github.com/anastassiavybornova/bikenwgaps) _Automated Detection of Missing Links in Bicycle Networks_.
 
 **Publication**: [https://doi.org/10.1111/gean.12324](https://doi.org/10.1111/gean.12324)
-
 
 ## How to cite
 If you use FixBikeNet in your research, please cite the paper:
