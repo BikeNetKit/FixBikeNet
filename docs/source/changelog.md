@@ -4,7 +4,7 @@
 
 - 🐛 Added footway to pbi mapping
 - 🐛 Fixed mingap checks
-- 🎨 Turned gap lengths into integers
+- 🎨 Turned gap lengths to integers
 
 ## Version 0.8.1 (2026-09-12)
 
