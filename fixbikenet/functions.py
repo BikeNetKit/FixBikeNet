@@ -362,6 +362,8 @@ def find_actual_gaps(G, potential_gaps, mingap):
             undirected simple graph representing the street network with weighted edges
         potential_gaps: list
             all unique potential gaps in protected bicycle network
+        mingap : int
+            Minimum distance between node pairs to be considered as a potential gap, in meters.
 
         Returns
         -------
@@ -403,7 +405,8 @@ def find_actual_gaps(G, potential_gaps, mingap):
                 valid = False
                 break
 
-        if valid and nx.shortest_path_length(G, u, v, weight="length") >= mingap:
+        gaplength = nx.shortest_path_length(G, u, v, weight="length")
+        if valid and gaplength >= mingap:
             found_gaps.append((u, v))
             found_gaps_nsp.append(nodelist)
 
@@ -640,7 +643,7 @@ def compute_benefit_metric(comp, node_path, ebc):
     B = sum(lengths * ebcs) / sum(lengths)
     return B
 
-def gap_declustering(gaps_df, G, ebc, contact_nodes):
+def gap_declustering(gaps_df, G, ebc, contact_nodes, mingap):
     """
     Parameters
     ----------
@@ -648,13 +651,15 @@ def gap_declustering(gaps_df, G, ebc, contact_nodes):
         Dataframe containing gaps in protected bicycle network
     G : networkx.Graph
         undirected simple graph representing the street network with weighted edges
-    ebc: dict
+    ebc : dict
         local betweenness centrality values for all edges in network
     contact_nodes : list
+    mingap : int
+        Minimum distance between node pairs to be considered as a potential gap, in meters.
 
     Returns
     -------
-    result: pd.DataFrame
+    result : pd.DataFrame
         Dataframe with node path for gaps and the newly calculated benefit metric
     """
     C = nx.Graph()
@@ -708,7 +713,13 @@ def gap_declustering(gaps_df, G, ebc, contact_nodes):
                         target=target,
                         weight="length"
                     )
-                    if node_path:
+                    gaplength = nx.shortest_path_length(
+                        comp,
+                        source=source,
+                        target=target,
+                        weight="length"
+                    )
+                    if node_path and gaplength >= mingap:
                         candidate_paths.append(node_path)
                 except nx.NetworkXNoPath:
                     continue
