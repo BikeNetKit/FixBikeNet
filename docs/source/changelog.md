@@ -1,8 +1,14 @@
 # Changelog
 
+## Version 0.8.2 (2026-09-25)
+
+- 🐛 Added footway to pbi mapping
+- 🐛 Fixed mingap checks
+- 🎨 Turned gap lengths into integers
+
 ## Version 0.8.1 (2026-09-12)
 
-- 🐛 Add bicycle_road to pbi mapping
+- 🐛 Added bicycle_road to pbi mapping
 - 🐛 Fixed ruff-check in pre-commit hooks
 - 💄 Made tqdm bars consistent in notebooks
 - 💄 Polished exported filenames
