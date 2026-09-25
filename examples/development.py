@@ -12,7 +12,6 @@ fbn.constants._ROUTING_PENALTY = {0: 1.5, 1: 1}
 fbn.fixbikenet(
             city_query="Frederiksberg",
             radius = 1000,
-            mingap = 0,
             maxgap = 500,
             numgaps = 20,
             import_files={

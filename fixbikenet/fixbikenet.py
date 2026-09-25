@@ -60,7 +60,7 @@ def fixbikenet(
     radius : int, default 2500
         cut-off length for computation of local betweenness centrality, in meters
     mingap : int, default 20
-        minimum distance between node pairs to be considered as a potential gap, in meters
+        Minimum distance between node pairs to be considered as a potential gap, in meters.
     maxgap : int, default 800
         maximum distance between node pairs to be considered as a potential gap, in meters
     numgaps : int, default 50
@@ -171,7 +171,7 @@ def fixbikenet(
         {
             "gap": found_gaps,
             "benefit": Bs,
-            "nodelist": found_gaps_nsp
+            "nodelist": found_gaps_nsp,
         }
     )
     df = df.sort_values(by="benefit", ascending=False).reset_index(drop=True)
@@ -183,7 +183,7 @@ def fixbikenet(
         df = df.iloc[:numgaps*constants._CLUSTER_GAPS_PER_FINAL_GAP]
 
     #decluster edges
-    gap_df = gap_declustering(df, G, ebc, contact_nodes)
+    gap_df = gap_declustering(df, G, ebc, contact_nodes, mingap)
 
     progress_bar = initialize_progress_bar("Postprocess data", 5)
     gap_df = gap_df.nlargest(numgaps, "benefit").reset_index(drop=True)
@@ -203,7 +203,7 @@ def fixbikenet(
     progress_bar.update(1)
 
     gaps_ordered['ordering'] = gaps_ordered.index
-    gaps_ordered['length'] = gaps_ordered['geometry'].length
+    gaps_ordered['length'] = gaps_ordered['geometry'].length.astype(int)
 
     edges_pbi_gdf = edges_gdf[edges_gdf["pbi"] == 1]
 
