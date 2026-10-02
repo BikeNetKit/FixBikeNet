@@ -5,6 +5,7 @@ import networkx as nx
 import numpy as np
 import osmnx as ox
 import pandas as pd
+import warnings
 
 from . import constants, settings
 
@@ -226,50 +227,52 @@ def fixbikenet(
             if p not in keepgapdata:
                 del gaps_ordered[p] 
 
-    # Generate export data filename
     if export_data:
-        os.makedirs(settings.export_path, exist_ok=True)
-        if city_id is None:
-            city_string = city_query
+        if len(gaps_ordered)<1:
+            warnings.warn("No gaps found. No data was exported.")
         else:
-            city_string = city_id
-        export_data_filename = (
-                slugify(city_string) + "-fixbikenet-gaps" + "." + settings.export_file_format
-        )
+            # Generate export data filename
+            os.makedirs(settings.export_path, exist_ok=True)
+            if city_id is None:
+                city_string = city_query
+            else:
+                city_string = city_id
+            export_data_filename = (
+                    slugify(city_string) + "-fixbikenet-gaps" + "." + settings.export_file_format
+            )
 
-    if export_data:
-        edges_gdf.drop(["osmid"], axis=1, inplace=True)
-        city_boundary.to_crs(epsg=4326, inplace=True)
-        if settings.export_file_format == "geojson":
-            progress_bar = initialize_progress_bar("Exporting data", 4, "file")
-            gaps_ordered.to_file(settings.export_path + export_data_filename, driver="GeoJSON", RFC7946="YES")
-            progress_bar.update(1)
-            edges_pbi_gdf.to_file(settings.export_path + slugify(city_string) + "-fixbikenet-existing_bike_network.geojson", driver="GeoJSON", RFC7946="YES")
-            progress_bar.update(1)
-            edges_gdf.to_file(settings.export_path + slugify(city_string) + "-fixbikenet-existing_street_network.geojson", driver="GeoJSON", RFC7946="YES")
-            progress_bar.update(1)
-            city_boundary.to_file(settings.export_path + slugify(city_string) + "-fixbikenet-city_boundary.geojson", driver="GeoJSON", RFC7946="YES")
-            progress_bar.update(1)
-        elif settings.export_file_format == "gpkg":
-            f = settings.export_path + export_data_filename
-            if os.path.exists(f):
-                os.remove(f) # mode="w" does not work for to_file with gpkg. It always appends. Therefore, existing file needs to be deleted.
-            progress_bar = initialize_progress_bar("Exporting data", 1, "file")
-            gaps_ordered.to_file(f, driver="GPKG", layer="Identified gaps")
-            edges_pbi_gdf.to_file(f, driver="GPKG", layer="Existing bike network", append=True)
-            edges_gdf.to_file(f, driver="GPKG", layer="Existing street network", append=True)
-            city_boundary.to_file(f, driver="GPKG", layer="City boundary", append=True)
-            progress_bar.update(1)
-        progress_bar.close()
+            edges_gdf.drop(["osmid"], axis=1, inplace=True)
+            city_boundary.to_crs(epsg=4326, inplace=True)
+            if settings.export_file_format == "geojson":
+                progress_bar = initialize_progress_bar("Exporting data", 4, "file")
+                gaps_ordered.to_file(settings.export_path + export_data_filename, driver="GeoJSON", RFC7946="YES")
+                progress_bar.update(1)
+                edges_pbi_gdf.to_file(settings.export_path + slugify(city_string) + "-fixbikenet-existing_bike_network.geojson", driver="GeoJSON", RFC7946="YES")
+                progress_bar.update(1)
+                edges_gdf.to_file(settings.export_path + slugify(city_string) + "-fixbikenet-existing_street_network.geojson", driver="GeoJSON", RFC7946="YES")
+                progress_bar.update(1)
+                city_boundary.to_file(settings.export_path + slugify(city_string) + "-fixbikenet-city_boundary.geojson", driver="GeoJSON", RFC7946="YES")
+                progress_bar.update(1)
+            elif settings.export_file_format == "gpkg":
+                f = settings.export_path + export_data_filename
+                if os.path.exists(f):
+                    os.remove(f) # mode="w" does not work for to_file with gpkg. It always appends. Therefore, existing file needs to be deleted.
+                progress_bar = initialize_progress_bar("Exporting data", 1, "file")
+                gaps_ordered.to_file(f, driver="GPKG", layer="Identified gaps")
+                edges_pbi_gdf.to_file(f, driver="GPKG", layer="Existing bike network", append=True)
+                edges_gdf.to_file(f, driver="GPKG", layer="Existing street network", append=True)
+                city_boundary.to_file(f, driver="GPKG", layer="City boundary", append=True)
+                progress_bar.update(1)
+            progress_bar.close()
 
-        if export_plot:
-            os.makedirs("./results/plots/", exist_ok=True)
-            fig, ax = plt.subplots(1, 1, figsize=(10, 10))
-            edges_pbi_gdf.plot(ax=ax, color="grey")
-            gaps_ordered.plot(ax=ax, color="red")
-            ax.set_axis_off()
-            fig.savefig("./results/plots/"+export_data_filename+".png", dpi=150, bbox_inches='tight')
-            plt.close()
+            if export_plot:
+                os.makedirs("./results/plots/", exist_ok=True)
+                fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+                edges_pbi_gdf.plot(ax=ax, color="grey")
+                gaps_ordered.plot(ax=ax, color="red")
+                ax.set_axis_off()
+                fig.savefig("./results/plots/"+export_data_filename+".png", dpi=150, bbox_inches='tight')
+                plt.close()
 
     # Cleanup, finalize
     endtime = time.time()
