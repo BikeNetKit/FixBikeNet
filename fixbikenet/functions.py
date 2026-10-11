@@ -180,6 +180,25 @@ def import_network(street_network):
 
     return g
 
+
+def _import_data_files(import_files):
+    """Import data files.
+    """
+    num_data_files = int(bool(import_files['point_data'])) + int(bool(import_files['trip_data']))
+    point_data = None
+    trip_data = None
+    if num_data_files:
+        progress_bar = initialize_progress_bar("Importing data files", num_data_files, "file")
+        if import_files['point_data']:
+            point_data = gpd.read_file(settings.import_path+import_files['point_data'])
+            progress_bar.update(1)
+        if import_files['trip_data']:
+            trip_data = pd.read_csv(settings.import_path+import_files['trip_data'])
+            progress_bar.update(1)
+        progress_bar.close()
+    return num_data_files, point_data, trip_data
+
+
 def map_edges_to_bike_infrastructure(g):
     """
     map if edges in graph have bike infrastructure as specified in config.py

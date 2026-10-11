@@ -8,15 +8,16 @@ fbn.settings.export_file_format = 'gpkg'
 fbn.constants._ROUTING_PENALTY = {0: 1.5, 1: 1}
 
 fbn.settings.import_path = '/Users/mszell/Tresorit/bikenetkitshare/'
-city_id = "frederiksberg_dk"
+city_id = "copenhagen_dk"
 
 fbn.fixbikenet(
-            city_query="Fb",
+            city_query="Copenhagen",
             radius = 1000,
             maxgap = 500,
             numgaps = 20,
             import_files={
                 'city_boundary': 'boundaries/'+city_id+'.geojson',
-        'street_network': 'streetbike_networks/'+city_id+'.gpkg',
+                'street_network': 'streetbike_networks/'+city_id+'.gpkg',
+                'point_data': 'special/copenhagen_citizen_input.geojson',
             },
         )
