@@ -6,12 +6,12 @@ build-backend = "setuptools.build_meta"
 name = "fixbikenet"
 version = "0.8.2"
 authors = [
-  {name = "Manuel Knepper"},
-  {name = "Anastassia Vybornova"},
-  {name = "Michael Szell", email = "michael@szell.net"},
+    { name = "Michael Szell", email = "michael@szell.net" },
+    { name = "Manuel Knepper" },
+    { name = "Anastassia Vybornova" },
 ]
 maintainers = [
-  {name = "Michael Szell", email = "michael@szell.net"},
+    { name = "Michael Szell", email = "michael@szell.net" },
 ]
 license = "AGPL-3.0-or-later"
 readme = "README.md"
@@ -28,6 +28,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Natural Language :: English",
     "Topic :: Scientific/Engineering :: GIS",
 ]

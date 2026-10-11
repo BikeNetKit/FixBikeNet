@@ -21,7 +21,7 @@ jobs:
   caching:
     strategy:
       matrix:
-        python-version: ["3.12", "3.14"]
+        python-version: ["3.12", "3.15"]
         os: [ ubuntu-latest ]
       fail-fast: false
     env:
@@ -31,10 +31,10 @@ jobs:
       run:
         shell: bash -elo pipefail {0}
 
-    name: Cache for ${{ matrix.python-version }} on ${{ matrix.os }}
+    name: cache (${{ matrix.python-version }} on ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Get week number
         run: echo "WEEK=$(date +'%V')" >> $GITHUB_ENV
@@ -51,11 +51,11 @@ jobs:
     needs: caching
     strategy:
       matrix:
-        python-version: ["3.12", "3.14"]
+        python-version: ["3.12", "3.15"]
         os: [ ubuntu-latest ]
         submodule:
-          - { name: "Main", pytest_args: "tests/test_main.py" }
-          - { name: "Functions", pytest_args: "tests/test_functions.py" }
+          - { name: "fixbikenet", pytest_args: "tests/test_fixbikenet.py" }
+          - { name: "functions", pytest_args: "tests/test_functions.py" }
       fail-fast: false
 
     name: ${{ matrix.submodule.name }} (${{ matrix.python-version }} on ${{ matrix.os }})
@@ -66,7 +66,7 @@ jobs:
         shell: bash -el {0}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Get week number
         run: echo "WEEK=$(date +'%V')" >> $GITHUB_ENV
@@ -87,7 +87,7 @@ jobs:
           pytest ${{ matrix.submodule.pytest_args }} --cov --cov-branch --cov-report=xml
 
       - name: Upload results to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: BikeNetKit/FixBikeNet
