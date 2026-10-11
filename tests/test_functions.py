@@ -117,6 +117,9 @@ def create_graph_for_routing():
                   (2, 3): {'length': 5, 'pbi': True, 'weight': 5},
                   (3, 4): {'length': 6, 'pbi': False, 'weight': 30}}
     nx.set_edge_attributes(G, attributes)
+    G_lengths = nx.get_edge_attributes(G, "length")
+    nx.set_edge_attributes(G, G_lengths, "distance")
+    nx.set_edge_attributes(G, G_lengths, "distance_weighted")
     return G
 
 @pytest.fixture

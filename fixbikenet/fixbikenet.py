@@ -16,6 +16,7 @@ import time
 import matplotlib.pyplot as plt
 
 from fixbikenet.functions import (
+    _get_weighted_distances,
     _import_data_files,
     _print_footer,
     _print_header,
@@ -179,6 +180,9 @@ def fixbikenet(
     # calculating local betweenness score dependent on radius
     ebc = compute_local_betweenness_centrality(G, nodes_gdf, radius)
 
+    G_lengths = nx.get_edge_attributes(G, "length")
+    nx.set_edge_attributes(G, G_lengths, "distance")
+    nx.set_edge_attributes(G, G_lengths, "distance_weighted")
     # Add point data to edges
     if point_data is not None:
         G_gaps = nx.MultiGraph(G.subgraph(set(n for nlist in found_gaps_nsp for n in nlist))) # To do once pythonmin>=3.15: *nlist for nlist in found_gaps_nsp
@@ -186,9 +190,14 @@ def fixbikenet(
         edges_gaps = edges_gaps.to_crs(constants._CRS_CALCULATIONS) # Project
         edges_gaps.reset_index(drop=False, inplace=True)
         edges_gaps = add_point_data_to_net(point_data, edges_gaps)
-        # To do: Write data from subset edges_gaps back to whole graph G, weighting lenghts
-
-
+        num_points_list = edges_gaps["num_points"]
+        edges_gaps['pair'] = list(zip(edges_gaps.u, edges_gaps.v))
+        edge_list = edges_gaps['pair']
+        num_points_dict = dict(zip(edge_list, num_points_list))
+        nx.set_edge_attributes(G, 0, "num_points")
+        nx.set_edge_attributes(G, num_points_dict, "num_points")
+        dist_weighted_dict = _get_weighted_distances(G, "num_points", inverted=True) # d_crash in [2]_, but the distance is multiplied instead of divided
+        nx.set_edge_attributes(G, dist_weighted_dict, "distance_weighted")
 
     # calculate parameter B for all gaps, used for deciding which gaps are most important
     Bs = rank_gaps_by_b(found_gaps_nsp, G, ebc)

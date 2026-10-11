@@ -5,13 +5,12 @@ from pandas.testing import assert_frame_equal
 import fixbikenet as fbn
 
 fbn.constants._CRS_CALCULATIONS = 'auto'
-fbn.constants._BETWEENNESS_RANDOM_NODES = 100
-
+valcols = ['source', 'target']
 
 @pytest.fixture
 def validation_gdf_frederiksberg():
     gdf = gpd.read_file("./tests/test_data/frederiksberg-fixbikenet-gaps.gpkg", layer='Identified gaps')
-    return gdf[['source', 'target']]
+    return gdf
 
 
 def test_fixbikenet_case_success_offline1(validation_gdf_frederiksberg):
@@ -22,15 +21,14 @@ def test_fixbikenet_case_success_offline1(validation_gdf_frederiksberg):
             city_query="Frederiksberg",
             radius = 1000,
             mingap = 0,
-            maxgap = 500,
+            maxgap = 100,
             numgaps = 20,
             import_files={
                 'city_boundary': "./tests/test_data/frederiksberg_boundary.geojson",
                 'street_network': "./tests/test_data/frederiksberg_streetbike_network.gpkg",
             },
         )
-
     assert_frame_equal(
-        validation_gdf_frederiksberg,
-        gaps_ordered[['source', 'target']]
+        validation_gdf_frederiksberg[valcols],
+        gaps_ordered[valcols]
     )
