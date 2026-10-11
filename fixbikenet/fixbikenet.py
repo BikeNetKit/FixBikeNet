@@ -22,6 +22,7 @@ from fixbikenet.functions import (
     _resolve_crs_calculations,
     _validate_parameters,
     _validate_settings,
+    add_point_data_to_net,
     compute_local_betweenness_centrality,
     create_gdf_with_geoms,
     find_actual_gaps,
@@ -104,10 +105,10 @@ def fixbikenet(
     ----------
     [1] Vybornova, A., Cunha, T., Gühnemann, A. and Szell, M. (2023), Automated Detection of Missing Links in Bicycle Networks. Geogr Anal, 55: 239-267. https://doi.org/10.1111/gean.12324
     """
-    
+
     # Setup
     starttime = time.time()
-    np.random.seed(settings.random_seed)  # Set random number generator seed for reproducibility
+    np.random.seed(settings.random_seed) # Set random number generator seed for reproducibility
     setting_was_auto = _validate_settings()
     import_files = _validate_parameters(city_query, radius, mingap, maxgap, export_data, import_files)
     _print_header(city_query)
@@ -115,10 +116,10 @@ def fixbikenet(
     ### Import data files
     num_data_files, point_data, _ = _import_data_files(import_files) # trip_data set to _. To do in the future.
 
-    # Get city boundary 
+    # Get city boundary
     if import_files['city_boundary']:
         city_boundary_shp = gpd.read_file(settings.import_path+import_files['city_boundary'])
-        city_boundary = city_boundary_shp.iloc[[0]]    
+        city_boundary = city_boundary_shp.iloc[[0]]
     else:
         city_boundary = ox.geocoder.geocode_to_gdf(city_query)
     
@@ -177,6 +178,17 @@ def fixbikenet(
 
     # calculating local betweenness score dependent on radius
     ebc = compute_local_betweenness_centrality(G, nodes_gdf, radius)
+
+    # Add point data to edges
+    if point_data is not None:
+        G_gaps = nx.MultiGraph(G.subgraph(set(n for nlist in found_gaps_nsp for n in nlist))) # To do once pythonmin>=3.15: *nlist for nlist in found_gaps_nsp
+        edges_gaps = ox.graph_to_gdfs(G_gaps, nodes=False)
+        edges_gaps = edges_gaps.to_crs(constants._CRS_CALCULATIONS) # Project
+        edges_gaps.reset_index(drop=False, inplace=True)
+        edges_gaps = add_point_data_to_net(point_data, edges_gaps)
+        # To do: Write data from subset edges_gaps back to whole graph G, weighting lenghts
+
+
 
     # calculate parameter B for all gaps, used for deciding which gaps are most important
     Bs = rank_gaps_by_b(found_gaps_nsp, G, ebc)

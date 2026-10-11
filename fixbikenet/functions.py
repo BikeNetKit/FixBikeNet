@@ -17,7 +17,9 @@ import sys  # noqa: F401, use sys.exit() for debugging
 import geopandas as gpd
 import networkx as nx
 import osmnx as ox
+import shapely
 from shapely.geometry import LineString, Point
+from shapely.strtree import STRtree
 from tqdm import tqdm
 
 
@@ -293,18 +295,19 @@ def find_edges_to_drop(g):
     return edges_to_drop
 
 def weigh_edges(G):
-    """
-    adds weight parameter to all edges in G, which is calculated by multiplying the length of the edge with the corresponding penalty value
+    """Add weight parameter to all edges in G, calculated by multiplying the
+    length of the edge with the corresponding penalty value.
 
     Parameters
     ----------
-    G: networkx.Graph
-        undirected simple graph representing the street network
+    G : networkx.Graph
+        Undirected simple graph representing the street network.
 
     Returns
     -------
-    G: networkx.Graph
-        undirected simple graph representing the street network with weighted edges
+    G : networkx.Graph
+        Undirected simple graph representing the street network with weighted 
+        edges.
     """
     for edge in G.edges:
         # compute edge weight
@@ -372,25 +375,27 @@ def find_potential_gaps(contact_nodes, nodes_gdf, maxgap):
     return potential_gaps
 
 def find_actual_gaps(G, potential_gaps, mingap):
+    """Determine which potential gaps are actual gaps by finding paths between 
+    all contact nodes and only keeping the gaps that have no protected bike
+    infrastructure.
+
+    Parameters
+    ----------
+    G : networkx.Graph
+        Undirected simple graph representing the street network with weighted 
+        edges.
+    potential_gaps : list
+        All unique potential gaps in protected bicycle network.
+    mingap : int
+        Minimum distance between node pairs to be considered as a potential gap, in meters.
+
+    Returns
+    -------
+    found_gaps : list
+        List of all gaps in protected bicycle network.
+    found_gaps_nsp : list
+        List of paths in network for all gaps in protected bicycle network.
     """
-        determines which potential gaps are actual gaps by finding paths between all contact nodes and only keeping the gaps that have no protected bike infrastructure
-
-        Parameters
-        ----------
-        G: networkx.Graph
-            undirected simple graph representing the street network with weighted edges
-        potential_gaps: list
-            all unique potential gaps in protected bicycle network
-        mingap : int
-            Minimum distance between node pairs to be considered as a potential gap, in meters.
-
-        Returns
-        -------
-        found_gaps: list
-            list of all gaps in protected bicycle network
-        found_gaps_nsp: list
-            list of paths in network for all gaps in protected bicycle network
-        """
     pbi_dict = nx.get_edge_attributes(G, "pbi")
 
     found_gaps = []
@@ -430,6 +435,91 @@ def find_actual_gaps(G, potential_gaps, mingap):
             found_gaps_nsp.append(nodelist)
 
     return found_gaps, found_gaps_nsp
+
+
+def add_point_data_to_net(points, edges):
+    """Match point data to network edges.
+
+    Parameters
+    ----------
+    points : geopandas.geodataframe.GeoDataFrame
+        A geodataframe of unprojected point geometries, optional having a 
+        column ``num`` containing an integer. This could be (number of) point 
+        events like crashes or citizen feedback to improve bike infrastructure. 
+        If a ``num`` column is not provided, assumes 1 per point.
+    edges : geopandas.geodataframe.GeoDataFrame
+        A geodataframe of projected spatial network edges. This is the routed 
+        network of seed points.
+    matching_distance : int, default `settings.import_point_data_snap_distance`
+        Matching distance in meters. Set via 
+        `settings.import_point_data_snap_distance`.
+
+    Returns
+    -------
+    edges_with_data : geopandas.geodataframe.GeoDataFrame
+        The same spatial network edges, but with a new int column 
+        ``num_points`` populated with the summed up ``num`` values of all 
+        points, matched to the closest links if within `matching_distance`. 
+    """
+
+    edges_with_data = edges.copy()
+
+    points_projected = points.to_crs(constants._CRS_CALCULATIONS)
+
+    # If column "num" is not provided assume 1 event per point
+    if 'num' in points_projected.columns:
+        nums = points_projected['num']
+    else:
+        nums = [1] * len(points_projected)
+
+    # Initialize the 'num_points' column to 0 for all edges
+    edges_with_data['num_points'] = 0 * len(edges_with_data)
+
+    # Get geometries of edges and points
+    edges_geoms = edges_with_data['geometry']
+    points_geoms = points_projected['geometry']
+
+    # Build an r-tree spatial index by position for subsequent iloc
+    rtree = STRtree(edges_geoms)    
+                            
+    for point in points_geoms.items(): # point = (id, POINT(x, y))
+
+        # Query the tree for all the edges within the matching distance of the point
+        edges_within_matching_distance = rtree.query(
+            point[1],
+            predicate='dwithin',
+            distance=settings.import_point_data_snap_distance
+        )
+
+        # If no edges are within the matching distance, continue to the next point
+        if len(edges_within_matching_distance) == 0:
+            continue
+
+        # Calculate the distances from the point to each of the edges, and round to 10 decimal places to avoid floating point precision issues
+        distances = []
+        for edge in edges_within_matching_distance:
+            distance = np.around(shapely.distance(point[1], edges_geoms.iloc[edge]), decimals=10)
+            distances.append(distance)
+
+        # Get the edges that are closest to the point
+        closest_edges = edges_within_matching_distance[np.where(distances == np.min(distances))]
+
+        # Get the lowest index of the closest edges
+        closest_edges_min_index = np.sort(closest_edges)[0]
+
+        # Get the number of events at the point
+        num = nums[point[0]]
+
+        # Add the number of events to the nearest edge
+        edges_with_data.loc[closest_edges_min_index, 'num_points'] += num
+
+    # Move the 'geometry' column to the end of the GeoDataFrame
+    # Necessary for testing the function
+    cols = [c for c in edges_with_data.columns if c != 'geometry'] + ['geometry']
+    edges_with_data = edges_with_data[cols]
+
+    return edges_with_data
+
 
 def compute_local_betweenness_centrality(G, nodes_gdf, radius):
     """
@@ -486,17 +576,17 @@ def compute_local_betweenness_centrality(G, nodes_gdf, radius):
     return ebc
 
 def rank_gaps_by_b(found_gaps_nsp, G, ebc):
-    """
-    calculates b for all gaps
+    """Calculate b for all gaps.
 
     Parameters
     ----------
-    found_gaps_nsp: list
-        list of paths in network for all gaps in protected bicycle network
-    G: networkx.Graph
-        undirected simple graph representing the street network with weighted edges
-    ebc: dict
-        local betweenness centrality values for all edges in network
+    found_gaps_nsp : list
+        List of paths in network for all gaps in protected bicycle network.
+    G : networkx.Graph
+        Undirected simple graph representing the street network with weighted
+        edges.
+    ebc : dict
+        Local betweenness centrality values for all edges in network.
 
     Returns
     -------
