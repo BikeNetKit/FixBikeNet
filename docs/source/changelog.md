@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 0.9.0 (2026-10-11)
+
+- ✨ Added reprioritization through point data import
+- 🐛 Prevented zero gap exports
+- ⬆️ Added Python 3.15 support
+- ⬆️ Updated actions versions
+- 📄 Added OG to docs
+
 ## Version 0.8.2 (2026-09-25)
 
 - 🐛 Added footway to pbi mapping
