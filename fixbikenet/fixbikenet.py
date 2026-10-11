@@ -16,11 +16,14 @@ import time
 import matplotlib.pyplot as plt
 
 from fixbikenet.functions import (
+    _get_weighted_distances,
+    _import_data_files,
     _print_footer,
     _print_header,
     _resolve_crs_calculations,
     _validate_parameters,
     _validate_settings,
+    add_point_data_to_net,
     compute_local_betweenness_centrality,
     create_gdf_with_geoms,
     find_actual_gaps,
@@ -51,8 +54,7 @@ def fixbikenet(
     export_plot=False,
     import_files={},
 ):
-    """
-    Finds gaps in bicycle networks and returns the `numgaps` that are the most important to fill.
+    """Find gaps in bicycle networks and return the `numgaps` that are the most important to fill.
 
     Parameters
     ----------
@@ -75,17 +77,25 @@ def fixbikenet(
     import_files: dict, default {}
         The following key:value entries can be set:
 
-            - 'city_boundary' : None or str, default None
-                If not set to None, the study area is selected from the 
-                (Multi)Polygon provided in the city_boundary shape or gpkg file, 
-                ideally in unprojected latitude-longitude degrees (EPSG:4326), but 
-                EPSG:3857 also works.
-            - 'street_network' : str | None, default None
-                If not set to None, the street network is loaded from this file. Must be a gpkg file in unprojected crs EPSG:4326 with layers nodes and edges, with the structure that an undirected osmnx street network g has after saved via ox.io.save_graph_geopackage(). For example:
-                >>> ox.settings.useful_tags_way = ["highway", "cycleway", "cycleway:right", "cycleway:left", "cycleway:both", "cyclestreet"]
-                >>> g = ox.graph_from_place("Barcelona", network_type='all', simplify=False)
-                >>> g = nx.MultiGraph(ox.convert.to_digraph(g))
-                >>> ox.io.save_graph_geopackage(g, "Barcelona_streets.gpkg").
+        - 'city_boundary' : None or str, default None
+            If not set to None, the study area is selected from the 
+            (Multi)Polygon provided in the city_boundary shape or gpkg file, 
+            ideally in unprojected latitude-longitude degrees (EPSG:4326), but 
+            EPSG:3857 also works.
+        - 'street_network' : str | None, default None
+            If not set to None, the street network is loaded from this file. 
+            Must be a gpkg file in unprojected crs EPSG:4326 with layers nodes 
+            and edges, with the structure that an undirected osmnx street 
+            network g has after saved via ox.io.save_graph_geopackage(). For example:
+            >>> ox.settings.useful_tags_way = ["highway", "cycleway", "cycleway:right", "cycleway:left", "cycleway:both", "cyclestreet"]
+            >>> g = ox.graph_from_place("Barcelona", network_type='all', simplify=False)
+            >>> g = nx.MultiGraph(ox.convert.to_digraph(g))
+            >>> ox.io.save_graph_geopackage(g, "Barcelona_streets.gpkg").
+        - 'point_data' : None or str, default None
+            If not set to None, an additional data set of points will be loaded 
+            from this file, representing point events like traffic crashes or 
+            citizen feedback to improve bike infrastructure. Must be a gpkg or geojson file in unprojected CRS EPSG:4326 containing only point objects, optionally with an int ``num`` column that encodes the 
+            number of point events. The data set is used to re-prioritize the ordering of the network gaps, controlled with `settings.import_data_impact`.
 
     Returns
     -------
@@ -96,17 +106,21 @@ def fixbikenet(
     ----------
     [1] Vybornova, A., Cunha, T., Gühnemann, A. and Szell, M. (2023), Automated Detection of Missing Links in Bicycle Networks. Geogr Anal, 55: 239-267. https://doi.org/10.1111/gean.12324
     """
+
     # Setup
     starttime = time.time()
-    np.random.seed(settings.random_seed)  # Set random number generator seed for reproducibility
+    np.random.seed(settings.random_seed) # Set random number generator seed for reproducibility
     setting_was_auto = _validate_settings()
     import_files = _validate_parameters(city_query, radius, mingap, maxgap, export_data, import_files)
     _print_header(city_query)
     
-    # Get city boundary 
+    ### Import data files
+    num_data_files, point_data, _ = _import_data_files(import_files) # trip_data set to _. To do in the future.
+
+    # Get city boundary
     if import_files['city_boundary']:
         city_boundary_shp = gpd.read_file(settings.import_path+import_files['city_boundary'])
-        city_boundary = city_boundary_shp.iloc[[0]]    
+        city_boundary = city_boundary_shp.iloc[[0]]
     else:
         city_boundary = ox.geocoder.geocode_to_gdf(city_query)
     
@@ -165,6 +179,25 @@ def fixbikenet(
 
     # calculating local betweenness score dependent on radius
     ebc = compute_local_betweenness_centrality(G, nodes_gdf, radius)
+
+    G_lengths = nx.get_edge_attributes(G, "length")
+    nx.set_edge_attributes(G, G_lengths, "distance")
+    nx.set_edge_attributes(G, G_lengths, "distance_weighted")
+    # Add point data to edges
+    if point_data is not None:
+        G_gaps = nx.MultiGraph(G.subgraph(set(n for nlist in found_gaps_nsp for n in nlist))) # To do once pythonmin>=3.15: *nlist for nlist in found_gaps_nsp
+        edges_gaps = ox.graph_to_gdfs(G_gaps, nodes=False)
+        edges_gaps = edges_gaps.to_crs(constants._CRS_CALCULATIONS) # Project
+        edges_gaps.reset_index(drop=False, inplace=True)
+        edges_gaps = add_point_data_to_net(point_data, edges_gaps)
+        num_points_list = edges_gaps["num_points"]
+        edges_gaps['pair'] = list(zip(edges_gaps.u, edges_gaps.v))
+        edge_list = edges_gaps['pair']
+        num_points_dict = dict(zip(edge_list, num_points_list))
+        nx.set_edge_attributes(G, 0, "num_points")
+        nx.set_edge_attributes(G, num_points_dict, "num_points")
+        dist_weighted_dict = _get_weighted_distances(G, "num_points", inverted=True) # d_crash in [2]_, but the distance is multiplied instead of divided
+        nx.set_edge_attributes(G, dist_weighted_dict, "distance_weighted")
 
     # calculate parameter B for all gaps, used for deciding which gaps are most important
     Bs = rank_gaps_by_b(found_gaps_nsp, G, ebc)

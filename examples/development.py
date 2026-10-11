@@ -3,20 +3,33 @@
 import fixbikenet as fbn
 
 # fbn.settings.import_path = '/Users/mszell/Tresorit/bikenetkitshare/'
-fbn.constants._BETWEENNESS_RANDOM_NODES = 100
+# fbn.constants._BETWEENNESS_RANDOM_NODES = 100
 fbn.settings.export_file_format = 'gpkg'
-fbn.constants._ROUTING_PENALTY = {0: 1.5, 1: 1}
+# fbn.settings.import_point_data_snap_distance = 100
 
-fbn.settings.import_path = '/Users/mszell/Tresorit/bikenetkitshare/'
-city_id = "frederiksberg_dk"
+# fbn.settings.import_data_impact = 10000
+
+# fbn.settings.import_path = '/Users/mszell/Tresorit/bikenetkitshare/'
+# city_id = "copenhagen_dk" #"copenhagen_dk"frederiksberg_dk
+
+# fbn.fixbikenet(
+#             city_query="Copenhagen", # "Frederiksberg"Copenhagen
+#             import_files={
+#                 'city_boundary': 'boundaries/'+city_id+'.geojson',
+#                 'street_network': 'streetbike_networks/'+city_id+'.gpkg',
+#                 'point_data': 'special/copenhagen_citizen_input.geojson',
+#             },
+#         )
+
 
 fbn.fixbikenet(
-            city_query="Fb",
-            radius = 1000,
-            maxgap = 500,
-            numgaps = 20,
-            import_files={
-                'city_boundary': 'boundaries/'+city_id+'.geojson',
-        'street_network': 'streetbike_networks/'+city_id+'.gpkg',
-            },
-        )
+    city_query="Frederiksberg",
+    radius = 1000,
+    mingap = 0,
+    maxgap = 100,
+    numgaps = 20,
+    import_files={
+        'city_boundary': "./tests/test_data/frederiksberg_boundary.geojson",
+        'street_network': "./tests/test_data/frederiksberg_streetbike_network.gpkg",
+    },
+)
