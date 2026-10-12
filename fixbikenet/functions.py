@@ -8,7 +8,7 @@ from collections import defaultdict
 import numpy as np
 import pandas as pd
 
-from . import config, constants, settings
+from . import constants, settings, osm
 
 pd.set_option('display.max_columns', None) # for debugging
 import datetime
@@ -201,28 +201,34 @@ def _import_data_files(import_files):
     return num_data_files, point_data, trip_data
 
 
-def map_edges_to_bike_infrastructure(g):
-    """
-    map if edges in graph have bike infrastructure as specified in config.py
+def assign_pbi_to_edges(g):
+    """Assign a boolean pbi attribute to all edges in a graph depending if they 
+    are considered protected bike infrastructure (pbi).
 
     Parameters
     ----------
-    g :networkx.MultiDiGraph
-        simplified graph representing the street network
+    g : networkx.MultiDiGraph
+        Simplified graph representing the street network.
 
     Returns
     -------
     g : networkx.MultiDiGraph
-        simplified graph representing the street network, with added binary edge attribute "pbi"
+        Simplified graph representing the street network, with added binary edge attribute "pbi".
     """
-
-    # add binary edge attribute "pbi" (protected bike infra: True/False)
     for edge in g.edges(keys=True):
-        if g.edges[edge].get("cycleway") in config.cycleway_bike_infra or g.edges[edge].get("cycleway:right") in config.cycleway_right_bike_infra or g.edges[edge].get("cycleway:left") in config.cycleway_left_bike_infra or g.edges[edge].get("cycleway:both") in config.cycleway_both_bike_infra or g.edges[edge].get("highway") in config.highway_bike_infra or g.edges[edge].get("cyclestreet") or g.edges[edge].get("bicycle_road") or g.edges[edge].get("highway") in config.highway_bike_infra_extended and g.edges[edge].get("bicycle") in config.bicycle_bike_infra and g.edges[edge].get("access") != 'private':
-            g.edges[edge]["pbi"] = 1
-        else:
-            g.edges[edge]["pbi"] = 0
+        assigned_pbi = 0
+        for tag in osm.PBI_DICT:
+            if g.edges[edge].get(tag) in osm.PBI_DICT[tag]:
+                assigned_pbi = 1
+        if not assigned_pbi: # Check if the edge fulfills a subcriterion
+            for tag in osm.PBI_DICT_SUB:
+                subtag = list(osm.PBI_DICT_SUB[tag][1].keys())[0]
+                if g.edges[edge].get(tag) in osm.PBI_DICT_SUB[tag][0] and g.edges[edge].get(subtag) in osm.PBI_DICT_SUB[tag][1][subtag] and g.edges[edge].get("access") != 'private':
+                    assigned_pbi = 1
+        g.edges[edge]["pbi"] = assigned_pbi
+
     return g
+
 
 def bike_infra_mapping_gdf(g, edges_gdf):
     """
