@@ -2,6 +2,6 @@
 
 import fixbikenet as fbn
 
-gaps = fbn.fixbikenet("Frederiksberg municipality")
+gaps_ordered = fbn.fixbikenet("Frederiksberg municipality")
 
 # data is saved in directory ./results
