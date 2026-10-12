@@ -308,6 +308,7 @@ def fixbikenet(
                 plt.close()
 
     # Cleanup, finalize
+    _reset_auto_settings(setting_was_auto)
     endtime = time.time()
     _print_footer(export_data, endtime, starttime)
 
