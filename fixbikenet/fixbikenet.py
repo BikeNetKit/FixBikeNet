@@ -20,6 +20,7 @@ from fixbikenet.functions import (
     _import_data_files,
     _print_footer,
     _print_header,
+    _reset_auto_settings,
     _resolve_crs_calculations,
     _validate_parameters,
     _validate_settings,
