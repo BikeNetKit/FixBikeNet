@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.9.1 (2026-10-12)
+
+- 🐛 Fixed CRS reset
+- 📄 Added Usage 1 docs
+
 ## Version 0.9.0 (2026-10-11)
 
 - ✨ Added reprioritization through point data import

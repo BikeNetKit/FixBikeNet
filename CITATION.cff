@@ -10,8 +10,8 @@ authors:
   given-names: "Anastassia"
   orcid: "https://orcid.org/0000-0001-6915-2561"
 title: "FixBikeNet"
-version: 0.9.0
-date-released: 2026-10-11
+version: 0.9.1
+date-released: 2026-10-12
 url: "https://github.com/BikeNetKit/FixBikeNet"
 preferred-citation:
   type: article
