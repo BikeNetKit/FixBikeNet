@@ -30,7 +30,7 @@ def create_validation_graph():
     return G
 
 def test_edge_infra_mapping(create_test_graph, create_validation_graph):
-    assert graphs_equal(map_edges_to_bike_infrastructure(create_test_graph), create_validation_graph)
+    assert graphs_equal(assign_pbi_to_edges(create_test_graph), create_validation_graph)
 
 @pytest.fixture
 def create_parallel_test_graph():

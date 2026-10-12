@@ -20,6 +20,7 @@ from fixbikenet.functions import (
     _import_data_files,
     _print_footer,
     _print_header,
+    _reset_auto_settings,
     _resolve_crs_calculations,
     _validate_parameters,
     _validate_settings,
@@ -36,7 +37,7 @@ from fixbikenet.functions import (
     graph_nodes_to_gdf,
     import_network,
     initialize_progress_bar,
-    map_edges_to_bike_infrastructure,
+    assign_pbi_to_edges,
     rank_gaps_by_b,
     slugify,
     weigh_edges,
@@ -148,7 +149,7 @@ def fixbikenet(
     g = ox.distance.add_edge_lengths(g)
 
     # check which edges have existing bike infrastructure as defined in config/config_osm.yml and assign boolean value to edges
-    g = map_edges_to_bike_infrastructure(g)
+    g = assign_pbi_to_edges(g)
     progress_bar.update(1)
     progress_bar.close()
 
@@ -308,6 +309,7 @@ def fixbikenet(
                 plt.close()
 
     # Cleanup, finalize
+    _reset_auto_settings(setting_was_auto)
     endtime = time.time()
     _print_footer(export_data, endtime, starttime)
 
