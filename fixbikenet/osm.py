@@ -2,11 +2,10 @@
 meant for advanced users only who have a good understanding of OSM tags.
 
 CAR_AND_PBI_NETWORK_CUSTOM_FILTER : list[str] or None
-    Custom filter for all infrastructure elements that are considered as 
-    growable by `growbikenet`. By default, `growbikenet` uses a custom filter 
-    to retrieve the combined drive and pbi (protected bicycle infrastructure) 
-    network. By default, `CAR_AND_PBI_NETWORK_CUSTOM_FILTER` is a superset of 
-    `PBI_CUSTOM_FILTER`, so it is best to keep them in sync.
+    Custom filter for all infrastructure elements that are the combined drive 
+    and pbi (protected bicycle infrastructure) network. By default, 
+    `CAR_AND_PBI_NETWORK_CUSTOM_FILTER` is a superset of `PBI_CUSTOM_FILTER`, 
+    so it is best to keep them in sync.
 PBI_CUSTOM_FILTER : list[str]
     Custom filter for protected bicycle infrastructure (pbi). Always keep in 
     sync with `PBI_DICT` and `PBI_DICT_SUB`. By default, `PBI_CUSTOM_FILTER` is 
