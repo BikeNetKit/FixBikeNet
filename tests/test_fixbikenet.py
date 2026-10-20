@@ -20,9 +20,9 @@ def test_fixbikenet_case_success_offline1(validation_gdf_frederiksberg):
     fbn.settings.radius = 1000
     gaps_ordered = fbn.fixbikenet(
             city_query="Frederiksberg",
-            mingap = 0,
-            maxgap = 100,
-            numgaps = 20,
+            min_gap_length = 0,
+            max_gap_length = 100,
+            num_gaps = 20,
             import_files={
                 'city_boundary': "./tests/test_data/frederiksberg_boundary.geojson",
                 'street_network': "./tests/test_data/frederiksberg_streetbike_network.gpkg",

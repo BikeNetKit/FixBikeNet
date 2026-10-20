@@ -25,8 +25,8 @@ from tqdm import tqdm
 
 def _validate_parameters(
         city_query,
-        mingap,
-        maxgap,
+        min_gap_length,
+        max_gap_length,
         export_data,
         import_files,
     ):
@@ -48,10 +48,10 @@ def _validate_parameters(
     """
     if type(city_query) != str:
         raise TypeError("city_query must be a string")
-    if type(mingap) != int:
-        raise TypeError("mingap must be an integer")
-    if type(maxgap) != int:
-        raise TypeError("maxgap must be an integer")
+    if type(min_gap_length) != int:
+        raise TypeError("min_gap_length must be an integer")
+    if type(max_gap_length) != int:
+        raise TypeError("max_gap_length must be an integer")
     if type(export_data) is not bool:
         raise TypeError("export_data must be a boolean")
     
@@ -400,9 +400,9 @@ def find_contact_nodes(G):
             contact_nodes.append(node)
     return contact_nodes
 
-def find_potential_gaps(contact_nodes, nodes_gdf, maxgap):
+def find_potential_gaps(contact_nodes, nodes_gdf, max_gap_length):
     """Find potential gaps in protected bicycle network, corresponding to two 
-    contact nodes that are within maxgap euclidean distance of each other.
+    contact nodes that are within max_gap_length euclidean distance of each other.
 
     Parameters
     ----------
@@ -410,7 +410,7 @@ def find_potential_gaps(contact_nodes, nodes_gdf, maxgap):
         list of all nodes that fulfill criteria to be a contact node.
     nodes_gdf : geopandas.GeoDataFrame
         All nodes in street network.
-    maxgap : int
+    max_gap_length : int
         User defined maximal euclidean distance between two contact nodes.
 
     Returns
@@ -423,7 +423,7 @@ def find_potential_gaps(contact_nodes, nodes_gdf, maxgap):
     contact_nodes_gdf = nodes_gdf[nodes_gdf['osmid'].isin(contact_nodes)]
 
     for node in contact_nodes:
-        node_buffer = contact_nodes_gdf.loc[node, "geometry"].buffer(maxgap)
+        node_buffer = contact_nodes_gdf.loc[node, "geometry"].buffer(max_gap_length)
         q = contact_nodes_gdf.sindex.query(node_buffer, predicate="intersects")
         neighbours = list(contact_nodes_gdf.iloc[q].index)
         neighbours.remove(node)
@@ -435,7 +435,7 @@ def find_potential_gaps(contact_nodes, nodes_gdf, maxgap):
     potential_gaps = list(set(potential_gaps))
     return potential_gaps
 
-def find_actual_gaps(G, potential_gaps, mingap):
+def find_actual_gaps(G, potential_gaps, min_gap_length):
     """Determine which potential gaps are actual gaps by finding paths between 
     all contact nodes and only keeping the gaps that have no protected bike
     infrastructure.
@@ -447,7 +447,7 @@ def find_actual_gaps(G, potential_gaps, mingap):
         edges.
     potential_gaps : list
         All unique potential gaps in protected bicycle network.
-    mingap : int
+    min_gap_length : int
         Minimum distance between node pairs to be considered as a potential 
         gap, in meters.
 
@@ -492,7 +492,7 @@ def find_actual_gaps(G, potential_gaps, mingap):
                 break
 
         gaplength = nx.shortest_path_length(G, u, v, weight="length")
-        if valid and gaplength >= mingap:
+        if valid and gaplength >= min_gap_length:
             found_gaps.append((u, v))
             found_gaps_nsp.append(nodelist)
 
@@ -868,7 +868,7 @@ def compute_benefit_metric(comp, node_path, ebc):
     B = sum(lengths * ebcs) / sum(lengths)
     return B
 
-def gap_declustering(gaps_df, G, ebc, contact_nodes, mingap):
+def gap_declustering(gaps_df, G, ebc, contact_nodes, min_gap_length):
     """
 
     Parameters
@@ -882,7 +882,7 @@ def gap_declustering(gaps_df, G, ebc, contact_nodes, mingap):
         local betweenness centrality values for all edges in network.
     contact_nodes : list
         List of contact nodes.
-    mingap : int
+    min_gap_length : int
         Minimum distance between node pairs to be considered as a potential 
         gap, in meters.
 
@@ -949,7 +949,7 @@ def gap_declustering(gaps_df, G, ebc, contact_nodes, mingap):
                         target=target,
                         weight="length"
                     )
-                    if node_path and gaplength >= mingap:
+                    if node_path and gaplength >= min_gap_length:
                         candidate_paths.append(node_path)
                 except nx.NetworkXNoPath:
                     continue
