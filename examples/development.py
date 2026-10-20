@@ -23,13 +23,13 @@ fbn.settings.export_file_format = 'gpkg'
 
 
 fbn.fixbikenet(
-    city_query="Frederiksberg",
+    city_query="Frederiksberg Municipality",
     radius = 1000,
     mingap = 0,
     maxgap = 100,
     numgaps = 20,
     import_files={
         'city_boundary': "./tests/test_data/frederiksberg_boundary.geojson",
-        'street_network': "./tests/test_data/frederiksberg_streetbike_network.gpkg",
+        # 'street_network': "./tests/test_data/frederiksberg_streetbike_network.gpkg",
     },
 )
