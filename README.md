@@ -39,7 +39,7 @@ We provide a minimum working example in two formats:
 - Python script ([examples/mwe.py](examples/mwe.py))
 - Jupyter notebook ([examples/mwe.ipynb](examples/mwe.ipynb))
 
-## Docs
+## Documentation
 Find more information in our docs: [https://docs.bikenetkit.org/FixBikeNet/](https://docs.bikenetkit.org/FixBikeNet/)
 
 ## Origin
