@@ -25,7 +25,6 @@ from tqdm import tqdm
 
 def _validate_parameters(
         city_query,
-        radius,
         mingap,
         maxgap,
         export_data,
@@ -49,8 +48,6 @@ def _validate_parameters(
     """
     if type(city_query) != str:
         raise TypeError("city_query must be a string")
-    if type(radius) != int:
-        raise TypeError("radius must be an integer")
     if type(mingap) != int:
         raise TypeError("mingap must be an integer")
     if type(maxgap) != int:
@@ -85,6 +82,8 @@ def _validate_settings():
         raise TypeError("constants._CRS_CALCULATIONS must be a string")
     if settings.export_file_format != "geojson" and settings.export_file_format != "gpkg":
         raise ValueError("settings.export_file_format must be 'geojson' or 'gpkg'")
+    if type(settings.radius) != int or settings.radius <= 0:
+        raise TypeError("settings.radius must be a positive integer")
 
     setting_was_auto = {'crs_calculations': False}
     # Ask whether constants._CRS_CALCULATIONS was 'auto'
@@ -576,23 +575,22 @@ def _get_weighted_distances(B, num_types, inverted=False):
     return dist_weighted_by_types_dict
 
 
-def compute_local_betweenness_centrality(G, nodes_gdf, radius):
-    """
-    computes weighted betweenness centrality for paths within radius
+def compute_local_betweenness_centrality(G, nodes_gdf):
+    """Compute weighted betweenness centrality for paths within 
+    `settings.radius`.
 
     Parameters
     ----------
-    G: networkx.Graph
-        undirected simple graph representing the street network with weighted edges
-    nodes_gdf: geopandas.GeoDataFrame
-        all nodes in street network
-    radius: int
-        maximum length of path for betweennessn centrality calculation, set by user
+    G : networkx.Graph
+        Undirected simple graph representing the street network with weighted 
+        edges.
+    nodes_gdf : geopandas.GeoDataFrame
+        All nodes in street network.
 
     Returns
     -------
-    ebc: dict
-        local betweenness centrality values for all edges in network
+    ebc : dict
+        Local betweenness centrality values for all edges in network.
     """
     # set current ebc value of all G edges to 0
     for edge in G.edges:
@@ -601,7 +599,7 @@ def compute_local_betweenness_centrality(G, nodes_gdf, radius):
     # create dict that will be updated at each step
     ebc = nx.get_edge_attributes(G, "ebc")
 
-    # For each node, compute "local" ebc (buffered with radius!)
+    # For each node, compute "local" ebc (buffered with settings.radius!)
     # For computational reasons, only over a subset of randomly drawn 
     # constants._BETWEENNESS_RANDOM_NODES nodes
     random_nodes = np.random.choice(list(G.nodes), size=constants._BETWEENNESS_RANDOM_NODES)
@@ -614,7 +612,7 @@ def compute_local_betweenness_centrality(G, nodes_gdf, radius):
             bar_format='{l_bar}{bar:'+str(constants._PROGRESS_BAR_LENGTH-7)+'}{r_bar}',
             disable=settings.silent,
         ):
-        node_buffer = nodes_gdf.loc[node, "geometry"].buffer(radius)
+        node_buffer = nodes_gdf.loc[node, "geometry"].buffer(settings.radius)
         q = nodes_gdf.sindex.query(node_buffer, predicate="intersects")
         neighbours = list(nodes_gdf.iloc[q].index)
         local_ebc = nx.edge_betweenness_centrality_subset(
