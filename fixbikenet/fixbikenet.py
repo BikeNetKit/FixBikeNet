@@ -7,7 +7,7 @@ import osmnx as ox
 import pandas as pd
 import warnings
 
-from . import constants, settings
+from . import constants, settings, osm
 
 pd.set_option('display.max_columns', None) # for debugging
 import sys  # noqa: F401, use sys.exit() for debugging
@@ -27,6 +27,7 @@ from fixbikenet.functions import (
     add_point_data_to_net,
     compute_local_betweenness_centrality,
     create_gdf_with_geoms,
+    download_network,
     find_actual_gaps,
     find_contact_nodes,
     find_edges_to_drop,
@@ -92,13 +93,15 @@ def fixbikenet(
             EPSG:3857 also works.
         - 'street_network' : str | None, default None
             If not set to None, the street network is loaded from this file. 
-            Must be a gpkg file in unprojected crs EPSG:4326 with layers nodes 
-            and edges, with the structure that an undirected osmnx street 
-            network g has after saved via ox.io.save_graph_geopackage(). For example:
-            >>> ox.settings.useful_tags_way = ["highway", "cycleway", "cycleway:right", "cycleway:left", "cycleway:both", "cyclestreet"]
-            >>> g = ox.graph_from_place("Barcelona", network_type='all', simplify=False)
+            For best results, this network should encompass both car and 
+            protected bicycle infrastructure. Must be a gpkg file in 
+            unprojected crs EPSG:4326 with layers nodes and edges, with the
+            structure that an undirected osmnx street network g has after saved 
+            via ox.io.save_graph_geopackage(). For example:
+            >>> import fixbikenet as fbn
+            >>> g = ox.graph_from_place("Barcelona", simplify=False, retain_all=True, custom_filter = fbn.osm.CARPBI_NETWORK_CUSTOM_FILTER)
             >>> g = nx.MultiGraph(ox.convert.to_digraph(g))
-            >>> ox.io.save_graph_geopackage(g, "Barcelona_streets.gpkg").
+            >>> ox.io.save_graph_geopackage(g, "Barcelona_carpbi_network.gpkg").
         - 'point_data' : None or str, default None
             If not set to None, an additional data set of points will be loaded 
             from this file, representing point events like traffic crashes or 
@@ -138,11 +141,16 @@ def fixbikenet(
     else:
         ### downloading and preprocessing data from OSM. To do: Fix download with custom filters
         progress_bar = initialize_progress_bar("Downloading OSM data", 1, "network")
-        ox.settings.useful_tags_way = ["highway", "cycleway", "cycleway:right", "cycleway:left", "cycleway:both", "cyclestreet"]
-        # fetch street network data from osmnx. To do: Make it work with city_boundary import
-        g = ox.graph_from_place(
-            city_query, network_type='all', simplify=False
-        )
+        # Get city boundary 
+        if import_files['city_boundary']:
+            city_boundary_shp = gpd.read_file(settings.import_path+import_files['city_boundary'])
+            city_boundary_gdf = city_boundary_shp.iloc[[0]]    
+        else:
+            city_boundary_gdf = ox.geocoder.geocode_to_gdf(city_query)
+        city_boundary_geometry = city_boundary_gdf.geometry[0]
+        # Fetch carpbi network data from osmnx
+        # Due to retain_all=False, this fetches the largest connected component
+        g = download_network(city_query, network_type='drive', custom_filter=osm.CARPBI_NETWORK_CUSTOM_FILTER, retain_all=False, city_boundary_geometry=city_boundary_geometry)
     
     progress_bar.update(1)
     progress_bar.close()

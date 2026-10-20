@@ -61,6 +61,7 @@ Developed by |NERDS|
 .. |JUST STREETS| image:: https://raw.githubusercontent.com/BikeNetKit/.github/refs/heads/main/profile/_static/logo_juststreets.png
    :target: https://www.just-streets.eu/
 .. |NERDS| image:: https://raw.githubusercontent.com/BikeNetKit/.github/refs/heads/main/profile/_static/logo_nerds.png
+   :width: 280px
    :target: https://www.nerds.itu.dk
 
 

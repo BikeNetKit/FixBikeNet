@@ -139,6 +139,53 @@ def initialize_progress_bar(desc_string, total=1, unit="step"):
         disable=settings.silent,
     )
 
+
+def download_network(city_query, network_type='drive', custom_filter=None, retain_all=True, city_boundary_geometry=None):
+    """Download and prepare a street network from OSM via OSMnx.
+
+    Downloads a network with a given `network_type` and `custom_filter` using ``ox.graph_from_place()``. Then, stores the undirected OSM data in geodataframes and projects using `constants._CRS_CALCULATIONS`.
+
+    Parameters
+    ----------
+    city_query : str
+        Name of the city that the analysis should be performed on. Overruled 
+        (for data fetching) if `city_boundary_geometry` is set.
+    network_type : {'drive', 'all', 'all_public', 'bike', 'drive_service', 'walk'}, default 'drive'
+        What type of street network to retrieve if `custom_filter` is None.
+    custom_filter : None or str or list[str], default None
+        A custom ways filter to be used instead of the `network_type` presets.
+    retain_all : bool, default True
+        If True, return the entire graph even if it is not connected, useful 
+        for disconnected bicycle networks. If False, retain only the largest 
+        weakly connected component, useful for road networks.
+    city_boundary_geometry : None or shapely.Polygon or shapely.MultiPolygon, 
+    default None
+        If not set to None, the study area is selected from this geometry.
+
+    Returns
+    -------
+    nodes : geopandas.geodataframe.GeoDataFrame
+        Extracted OSM nodes, projected.
+    edges : geopandas.geodataframe.GeoDataFrame
+        Extracted OSM edges, projected.
+    g_undir : networkx.classes.multigraph.MultiGraph
+        Extracted networkX graph, undirected.
+    """
+    # Fetch street network data from osmnx
+    if city_boundary_geometry is None:
+        g = ox.graph_from_place(
+        city_query, network_type=network_type, custom_filter=custom_filter, retain_all=retain_all
+        )
+    else:
+        g = ox.graph_from_polygon(
+        city_boundary_geometry, network_type=network_type, custom_filter=custom_filter, retain_all=retain_all
+        )
+
+    g_undir = g.to_undirected().copy() # convert to undirected (dropping OSMnx keys!)
+
+    return g_undir
+
+
 def import_network(street_network):
     """Import and project a street network from gpkg file
 
