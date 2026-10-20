@@ -47,7 +47,6 @@ from fixbikenet.functions import (
 
 def fixbikenet(
     city_query,
-    radius = 2500,
     mingap = 20,
     maxgap = 800,
     numgaps = 50,
@@ -56,26 +55,34 @@ def fixbikenet(
     export_plot=False,
     import_files={},
 ):
-    """Find gaps in bicycle networks and return the `numgaps` that are the most important to fill.
+    """Find gaps in bicycle networks and return the `numgaps` that are the most
+    important to fill.
 
     Parameters
     ----------
     city_query : str
-        name of the city that the analysis should be performed on
-    radius : int, default 2500
-        cut-off length for computation of local betweenness centrality, in meters
+        Name of the city that the analysis should be performed on.
     mingap : int, default 20
-        Minimum distance between node pairs to be considered as a potential gap, in meters.
+        Minimum distance between node pairs to be considered as a potential 
+        gap, in meters.
     maxgap : int, default 800
-        maximum distance between node pairs to be considered as a potential gap, in meters
+        Maximum distance between node pairs to be considered as a potential 
+        gap, in meters.
     numgaps : int, default 50
         Number of gaps to find.
-    export_data : bool, optional, default True
-        If set to True, data will be saved to a file. The filename is [slug].gpkg, where slug is a string id made out of city_name
+    export_data : bool, default True
+        If set to True, data will be saved to a file. The filename is 
+        [slug].[settings.export_file_format], where slug is a string id made 
+        out of `city_query` (or `city_id` if set).
     city_id : str | None, default None
-        If set, the slugified city_id is used in the filename of the data export. For example, a city_id "Athens" will slugify into "athens" in filenames. If set to None, the slugified city_query is used in the filename of the data export. It is useful to set a city_id for cities where the city_query is not the city name, for example to set for a city_query "Municipality of Athens" the city_id to "Athens".
+        If set, the slugified `city_id` is used in the filename of the data 
+        export. For example, a `city_id` "Athens" will slugify into "athens" 
+        in filenames. If set to None, the slugified `city_query` is used in the
+        filename of the data export. It is useful to set a `city_id` for cities
+        where the `city_query` is not the city name, for example to set for a 
+        `city_query` "Municipality of Athens" the `city_id` to "Athens".
     export_plot : bool, optional, default False
-        If set to True, plot will be saved to a file
+        If set to True, plot will be saved to a file.
     import_files: dict, default {}
         The following key:value entries can be set:
 
@@ -104,7 +111,7 @@ def fixbikenet(
     Returns
     -------
     gaps_ordered : geopandas.geodataframe.GeoDataFrame
-        ordered geodataframe with the `numgaps` most important gaps to fill
+        Ordered geodataframe with the `numgaps` most important gaps to fill.
 
     References
     ----------
@@ -115,7 +122,7 @@ def fixbikenet(
     starttime = time.time()
     np.random.seed(settings.random_seed) # Set random number generator seed for reproducibility
     setting_was_auto = _validate_settings()
-    import_files = _validate_parameters(city_query, radius, mingap, maxgap, export_data, import_files)
+    import_files = _validate_parameters(city_query, mingap, maxgap, export_data, import_files)
     _print_header(city_query)
     
     ### Import data files
@@ -187,7 +194,7 @@ def fixbikenet(
     found_gaps, found_gaps_nsp = find_actual_gaps(G, potential_gaps, mingap)
 
     # calculating local betweenness score dependent on radius
-    ebc = compute_local_betweenness_centrality(G, nodes_gdf, radius)
+    ebc = compute_local_betweenness_centrality(G, nodes_gdf)
 
     G_lengths = nx.get_edge_attributes(G, "length")
     nx.set_edge_attributes(G, G_lengths, "distance")

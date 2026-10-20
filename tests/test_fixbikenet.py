@@ -17,9 +17,9 @@ def test_fixbikenet_case_success_offline1(validation_gdf_frederiksberg):
     """Verify that the offline version of fixbikenet works as intended.
     """
     fbn.constants._ROUTING_PENALTY = {0: 1.5, 1: 1}
+    fbn.settings.radius = 1000
     gaps_ordered = fbn.fixbikenet(
             city_query="Frederiksberg",
-            radius = 1000,
             mingap = 0,
             maxgap = 100,
             numgaps = 20,

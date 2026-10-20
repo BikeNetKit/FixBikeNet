@@ -13,6 +13,8 @@ import_point_data_snap_distance : int, default 100
     meters.
 import_path : str
     Path to import files (as defined in `fixbikenet`'s import_files parameter).
+radius : int, default 2500
+    Cut-off length for computation of local betweenness centrality, in meters.
 random_seed : int, default 43
     Random number generator seed for reproducibility
 silent : bool, default False
@@ -25,5 +27,6 @@ import_data_impact = 10000
 import_point_data_snap_distance = 100
 import_path = "./"
 
+radius = 2500
 random_seed = 43 # off-by-one error
 silent = False
