@@ -1,15 +1,15 @@
 """Global constants for `fixbikenet` related to OpenStreetMap (OSM). These are 
 meant for advanced users only who have a good understanding of OSM tags.
 
-CAR_AND_PBI_NETWORK_CUSTOM_FILTER : list[str] or None
+CARPBI_NETWORK_CUSTOM_FILTER : list[str] or None
     Custom filter for all infrastructure elements that are the combined drive 
     and pbi (protected bicycle infrastructure) network. By default, 
-    `CAR_AND_PBI_NETWORK_CUSTOM_FILTER` is a superset of `PBI_CUSTOM_FILTER`, 
+    `CARPBI_NETWORK_CUSTOM_FILTER` is a superset of `PBI_CUSTOM_FILTER`, 
     so it is best to keep them in sync.
 PBI_CUSTOM_FILTER : list[str]
     Custom filter for protected bicycle infrastructure (pbi). Always keep in 
     sync with `PBI_DICT` and `PBI_DICT_SUB`. By default, `PBI_CUSTOM_FILTER` is 
-    a subset of `CAR_AND_PBI_NETWORK_CUSTOM_FILTER`, so it is best to keep them
+    a subset of `CARPBI_NETWORK_CUSTOM_FILTER`, so it is best to keep them
     in sync.
 PBI_DICT : dict
     Dictionary for protected bicycle infrastructure (pbi), for single criteria. 
@@ -28,7 +28,7 @@ for custom_tag in ["highway", "cycleway", "bicycle", "cycleway:right", "cycleway
         ox.settings.useful_tags_way.extend(custom_tag)
 
 
-CAR_AND_PBI_NETWORK_CUSTOM_FILTER = [ # adapted from https://github.com/gboeing/osmnx/blob/2fc39cb2792ff869881b99f724a2d97f0e958667/osmnx/_overpass.py#L77
+CARPBI_NETWORK_CUSTOM_FILTER = [ # adapted from https://github.com/gboeing/osmnx/blob/2fc39cb2792ff869881b99f724a2d97f0e958667/osmnx/_overpass.py#L77
     # Car infra - Instead of excluding what we don't want, we only include what we want. Note: we are OK with alleys and driveways
     '["highway"~"motorway|trunk|primary|secondary|tertiary|residential|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|service|unclassified"]["highway"!~"abandoned|construction|no|planned|platform|proposed|raceway|razed|rest_area|services"]["service"!~"emergency_access|parking|parking_aisle|private"]["area"!~"yes"]["access"!~"private"]["motor_vehicle"!~"no"]["motorcar"!~"no"]',
     # Bike infra, copied from PBI_CUSTOM_FILTER

@@ -92,9 +92,9 @@ def fixbikenet(
             structure that an undirected osmnx street network g has after saved 
             via ox.io.save_graph_geopackage(). For example:
             >>> import fixbikenet as fbn
-            >>> g = ox.graph_from_place("Barcelona", simplify=False, retain_all=True, custom_filter = fbn.osm.CAR_AND_PBI_NETWORK_CUSTOM_FILTER)
+            >>> g = ox.graph_from_place("Barcelona", simplify=False, retain_all=True, custom_filter = fbn.osm.CARPBI_NETWORK_CUSTOM_FILTER)
             >>> g = nx.MultiGraph(ox.convert.to_digraph(g))
-            >>> ox.io.save_graph_geopackage(g, "Barcelona_car_and_pbi_network.gpkg").
+            >>> ox.io.save_graph_geopackage(g, "Barcelona_carpbi_network.gpkg").
         - 'point_data' : None or str, default None
             If not set to None, an additional data set of points will be loaded 
             from this file, representing point events like traffic crashes or 
@@ -141,9 +141,9 @@ def fixbikenet(
         else:
             city_boundary_gdf = ox.geocoder.geocode_to_gdf(city_query)
         city_boundary_geometry = city_boundary_gdf.geometry[0]
-        # Fetch car_and_pbi network data from osmnx
+        # Fetch carpbi network data from osmnx
         # Due to retain_all=False, this fetches the largest connected component
-        g = download_network(city_query, network_type='drive', custom_filter=osm.CAR_AND_PBI_NETWORK_CUSTOM_FILTER, retain_all=False, city_boundary_geometry=city_boundary_geometry)
+        g = download_network(city_query, network_type='drive', custom_filter=osm.CARPBI_NETWORK_CUSTOM_FILTER, retain_all=False, city_boundary_geometry=city_boundary_geometry)
     
     progress_bar.update(1)
     progress_bar.close()
