@@ -21,10 +21,10 @@ fbn.settings.export_file_format = 'gpkg'
 #             },
 #         )
 
+fbn.settings.radius = 1000
 
 fbn.fixbikenet(
     city_query="Frederiksberg Municipality",
-    radius = 1000,
     mingap = 0,
     maxgap = 100,
     numgaps = 20,

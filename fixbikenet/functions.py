@@ -30,7 +30,7 @@ def _validate_parameters(
         export_data,
         import_files,
     ):
-    """ Check if user parameter input is valid. If not, raise an exception or 
+    """Check if user parameter input is valid. If not, raise an exception or 
     warning.
     
     Parameters
@@ -68,7 +68,7 @@ def _validate_parameters(
     return import_files
 
 def _validate_settings():
-    """ Check if user settings input is valid. If not, raise an exception or 
+    """Check if user settings input is valid. If not, raise an exception or 
     warning.
 
     Returns
@@ -92,7 +92,7 @@ def _validate_settings():
     return setting_was_auto
 
 def _resolve_crs_calculations(gdf):
-    """ Resolve constants._CRS_CALCULATIONS = 'auto'
+    """Resolve constants._CRS_CALCULATIONS = 'auto'
     
     Parameters
     ----------
@@ -189,12 +189,16 @@ def download_network(city_query, network_type='drive', custom_filter=None, retai
 def import_network(street_network):
     """Import and project a street network from gpkg file
 
-    For all edges between a pair of nodes u and v there must be one edge with key 0.
+    For all edges between a pair of nodes u and v there must be one edge with 
+    key 0.
 
     Parameters
     ----------
     street_network : str
-        The street network will be loaded from this file. Must be a gpkg file in unprojected crs EPSG:4326 with layers nodes and edges, with the structure that a osmnx street network g has after saving its undirected version via ox.io.save_graph_geopackage(). For example:
+        The street network will be loaded from this file. Must be a gpkg file 
+        in unprojected crs EPSG:4326 with layers nodes and edges, with the 
+        structure that a osmnx street network g has after saving its undirected 
+        version via ox.io.save_graph_geopackage(). For example:
         >>> g = ox.graph_from_place("Barcelona", network_type='all')
         >>> g = nx.MultiGraph(ox.convert.to_digraph(g))
         >>> ox.io.save_graph_geopackage(g, "Barcelona_streets.gpkg")
@@ -204,13 +208,13 @@ def import_network(street_network):
     Returns
     -------
     nodes : geopandas.geodataframe.GeoDataFrame
-        Extracted OSM nodes, projected
+        Extracted OSM nodes, projected.
     edges : geopandas.geodataframe.GeoDataFrame
-        Extracted OSM edges, projected
+        Extracted OSM edges, projected.
     g_undir : networkx.classes.multigraph.MultiGraph
-        Extracted networkX graph, undirected
+        Extracted networkX graph, undirected.
     city_boundary_gdf : geopandas.geodataframe.GeoDataFrame
-        Convex hull of the street network
+        Convex hull of the street network.
     """
 
     nodes = gpd.read_file(settings.import_path+street_network, layer='nodes')
@@ -259,7 +263,8 @@ def assign_pbi_to_edges(g):
     Returns
     -------
     g : networkx.MultiDiGraph
-        Simplified graph representing the street network, with added binary edge attribute "pbi".
+        Simplified graph representing the street network, with added binary 
+        edge attribute "pbi".
     """
     for edge in g.edges(keys=True):
         assigned_pbi = 0
@@ -277,20 +282,21 @@ def assign_pbi_to_edges(g):
 
 
 def bike_infra_mapping_gdf(g, edges_gdf):
-    """
-    add binary edge attribute pbi to edges_gdf
+    """Add binary edge attribute pbi to edges_gdf.
 
     Parameters
     ----------
     g : networkx.MultiDiGraph
-        simplified graph representing the street network, with added binary edge attribute "pbi"
-    edges_gdf: geopandas.GeoDataFrame
-        edges representing the street network
+        Simplified graph representing the street network, with added binary 
+        edge attribute "pbi".
+    edges_gdf : geopandas.GeoDataFrame
+        Edges representing the street network.
 
     Returns
     -------
-    edges_gdf: geopandas.GeoDataFrame
-        edges representing the street network with added binary attribute "pbi"
+    edges_gdf : geopandas.GeoDataFrame
+        Edges representing the street network with added binary attribute 
+        "pbi".
     """
     # Build dict of edge attribute
     attr_dict = {
@@ -303,18 +309,20 @@ def bike_infra_mapping_gdf(g, edges_gdf):
     return edges_gdf
 
 def find_edges_to_drop(g):
-    """
-    find parallel edges that have different pbi values, list the ones with pbi=0
+    """Find parallel edges that have different pbi values, list the ones with 
+    pbi=0.
 
     Parameters
     ----------
     g : networkx.MultiDiGraph
-        simplified graph representing the street network, with added binary edge attribute "pbi"
+        Simplified graph representing the street network, with added binary 
+        edge attribute "pbi".
 
     Returns
     -------
-    edges_to_drop: list
-        unique list of edges to drop-> edges where pbi values differ and pbi value=0 gets dropped
+    edges_to_drop : list
+        Unique list of edges to drop-> edges where pbi values differ and pbi 
+        value=0 gets dropped.
     """
     # to find parallel edges, get all u,v tuples for which u,v,w>0 exists:
     uvs = [edge[:2] for edge in list(g.edges) if edge[2] > 0]  # >0 includes key=1, key=2, ...
@@ -371,18 +379,19 @@ def weigh_edges(G):
     return G
 
 def find_contact_nodes(G):
-    """
-    find nodes that have both edges with protected and without protected bike infrastructure incident on them
+    """Find nodes that have both edges with protected and without protected 
+    bike infrastructure incident on them.
 
     Parameters
     ----------
-    G:networkx.Graph
-        undirected simple graph representing the street network with weighted edges
+    G : networkx.Graph
+        Undirected simple graph representing the street network with weighted 
+        edges.
 
     Return
     ------
-    contact_nodes: list
-        list of all nodes that fulfill criteria to be a contact node
+    contact_nodes : list
+        list of all nodes that fulfill criteria to be a contact node.
     """
     contact_nodes = []
     for node in G.nodes:
@@ -392,22 +401,22 @@ def find_contact_nodes(G):
     return contact_nodes
 
 def find_potential_gaps(contact_nodes, nodes_gdf, maxgap):
-    """
-    finds potential gaps in protected bicycle network, corresponding to two contact nodes that are within maxgap euclidean distance of each other
+    """Find potential gaps in protected bicycle network, corresponding to two 
+    contact nodes that are within maxgap euclidean distance of each other.
 
     Parameters
     ----------
     contact_nodes : list
-        list of all nodes that fulfill criteria to be a contact node
+        list of all nodes that fulfill criteria to be a contact node.
     nodes_gdf : geopandas.GeoDataFrame
-        all nodes in street network
+        All nodes in street network.
     maxgap : int
-        user defined maximal euclidean distance between two contact nodes
+        User defined maximal euclidean distance between two contact nodes.
 
     Returns
     -------
     potential_gaps : list
-        all unique potential gaps in protected bicycle network
+        All unique potential gaps in protected bicycle network.
     """
     potential_gaps = []
     nodes_gdf['osmid'] = nodes_gdf.index
@@ -439,7 +448,8 @@ def find_actual_gaps(G, potential_gaps, mingap):
     potential_gaps : list
         All unique potential gaps in protected bicycle network.
     mingap : int
-        Minimum distance between node pairs to be considered as a potential gap, in meters.
+        Minimum distance between node pairs to be considered as a potential 
+        gap, in meters.
 
     Returns
     -------
@@ -691,7 +701,7 @@ def rank_gaps_by_b(found_gaps_nsp, G, ebc):
     Returns
     -------
     Bs: list
-        list of values of b for all gaps in protected bicycle network
+        list of values of b for all gaps in protected bicycle network.
     """
     Bs = []
     for nodelist in tqdm(
@@ -713,21 +723,21 @@ def rank_gaps_by_b(found_gaps_nsp, G, ebc):
     return Bs
 
 def get_correct_edgetuples(edge_gdf, nodelist):
-    """
-    helper function that maps a node list (output of nx.shortest_paths)
-    to the correct set of edge tuples that can be used for INDEXING THE EDGE GDF
+    """Helper function that maps a node list (output of nx.shortest_paths)
+    to the correct set of edge tuples that can be used for INDEXING THE EDGE 
+    GDF.
 
     Parameters
     ----------
-    edge_gdf: geopandas.geodataframe.GeoDataFrame
-        The street network, in a projected coordinate reference system
-    nodelist: list
-        A list of nodes that make up source and targets of edges
+    edge_gdf : geopandas.geodataframe.GeoDataFrame
+        The street network, in a projected coordinate reference system.
+    nodelist : list
+        A list of nodes that make up source and targets of edges.
 
     Returns
     -------
-    edgelist_final: list
-        List of edge tuples that can be used for INDEXING THE EDGE GDF
+    edgelist_final : list
+        List of edge tuples that can be used for INDEXING THE EDGE GDF/
     """
     edgelist_prelim = zip(nodelist, nodelist[1:])
     edgelist_final = []
@@ -741,17 +751,19 @@ def get_correct_edgetuples(edge_gdf, nodelist):
 
 def create_gdf_with_geoms(df, edges):
     """
+
     Parameters
     ----------
-    df: pandas.DataFrame
-        Dataframe with path nodes and path edges
-    edges: geopandas.GeoDataFrame
-        The street network, in a projected coordinate reference system
+    df : pandas.DataFrame
+        Dataframe with path nodes and path edges.
+    edges : geopandas.GeoDataFrame
+        The street network, in a projected coordinate reference system.
 
     Returns
     -------
-    gdf: geopandas.GeoDataFrame
-        projected GeoDataFrame with path nodes and path edges and merged geometries
+    gdf : geopandas.GeoDataFrame
+        Projected GeoDataFrame with path nodes and path edges and merged
+        geometries.
     """
     # get geometry by merging all geoms from edge gdf
     df = df.copy()
@@ -766,15 +778,17 @@ def create_gdf_with_geoms(df, edges):
 
 def graph_nodes_to_gdf(G):
     """
+
     Parameters
     ----------
-    G: networkx.Graph
-        undirected simple graph representing the street network with weighted edges
+    G : networkx.Graph
+        Undirected simple graph representing the street network with weighted 
+        edges.
 
     Returns
     -------
-    nodes_gdf: geopandas.GeoDataFrame
-        geodataframe with nodes from G
+    nodes_gdf : geopandas.GeoDataFrame
+        geodataframe with nodes from G.
     """
     rows = []
     for n, data in G.nodes(data=True):
@@ -793,15 +807,17 @@ def graph_nodes_to_gdf(G):
 
 def graph_edges_to_gdf(G):
     """
+
     Parameters
     ----------
-    G: networkx.Graph
-        undirected simple graph representing the street network with weighted edges
+    G : networkx.Graph
+        Undirected simple graph representing the street network with weighted 
+        edges.
 
     Returns
     -------
-    edges_gdf: geopandas.GeoDataFrame
-        geodataframe with edges from G, including edge attributes
+    edges_gdf : geopandas.GeoDataFrame
+        geodataframe with edges from G, including edge attributes.
     """
     rows = []
     for u, v, data in G.edges(data=True):
@@ -829,22 +845,21 @@ def graph_edges_to_gdf(G):
     return edges_gdf
 
 def compute_benefit_metric(comp, node_path, ebc):
-    """
-    computes Benefit metric B for edge in connected component of edges.
+    """Compute benefit metric B for edge in connected component of edges.
 
     Parameters
     ----------
     comp : networkx.Graph
-        connected component of edges
+        Connected component of edges.
     node_path : list
-        list of nodes on path
-    ebc: dict
-        local betweenness centrality values for all edges in network
+        list of nodes on path.
+    ebc : dict
+        Local betweenness centrality values for all edges in network.
 
     Returns
     -------
-    B: float
-        Benefit metric B for edge
+    B : float
+        Benefit metric B for edge.
     """
     edgelist = [tuple(sorted(z)) for z in zip(node_path, node_path[1:])]
     lengths = np.array([comp.edges[edge]["length"] for edge in edgelist])
@@ -855,22 +870,27 @@ def compute_benefit_metric(comp, node_path, ebc):
 
 def gap_declustering(gaps_df, G, ebc, contact_nodes, mingap):
     """
+
     Parameters
     ----------
     gaps_df : pd.DataFrame
-        Dataframe containing gaps in protected bicycle network
+        Dataframe containing gaps in protected bicycle network.
     G : networkx.Graph
-        undirected simple graph representing the street network with weighted edges
+        undirected simple graph representing the street network with weighted 
+        edges.
     ebc : dict
-        local betweenness centrality values for all edges in network
+        local betweenness centrality values for all edges in network.
     contact_nodes : list
+        List of contact nodes.
     mingap : int
-        Minimum distance between node pairs to be considered as a potential gap, in meters.
+        Minimum distance between node pairs to be considered as a potential 
+        gap, in meters.
 
     Returns
     -------
     result : pd.DataFrame
-        Dataframe with node path for gaps and the newly calculated benefit metric
+        Dataframe with node path for gaps and the newly calculated benefit 
+        metric.
     """
     C = nx.Graph()
     C.graph.update(G.graph)
@@ -985,20 +1005,22 @@ def gap_declustering(gaps_df, G, ebc, contact_nodes, mingap):
     return result
 
 def slugify(s):
-    """Slugify a string
+    """Slugify a string.
 
     Source: https://github.com/Chalarangelo/30-seconds-of-code/blob/master/content/snippets/python/s/slugify.md
-    Note: A clean global solution would be using unidecode, but we do not want extra dependencies for this. We assume European city names in latin alphabet, some special letters like Hungarian long ö already mapped.
+    Note: A clean global solution would be using unidecode, but we do not want 
+    extra dependencies for this. We assume European city names in latin 
+    alphabet, some special letters like Hungarian long ö already mapped.
 
     Parameters
     ----------
     s : str
-        String to slufigy
+        String to slufigy.
 
     Returns
     -------
     s : str
-        Slugified string
+        Slugified string.
     """
     s = s.lower().strip()
     s = re.sub(r'[\s-]+', '', s)  # Remove white spaces, -

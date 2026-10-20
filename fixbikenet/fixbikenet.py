@@ -72,8 +72,8 @@ def fixbikenet(
         Number of gaps to find.
     export_data : bool, default True
         If set to True, data will be saved to a file. The filename is 
-        [slug].gpkg, where slug is a string id made out of `city_query` (or 
-        `city_id` if set).
+        [slug].[settings.export_file_format], where slug is a string id made 
+        out of `city_query` (or `city_id` if set).
     city_id : str | None, default None
         If set, the slugified `city_id` is used in the filename of the data 
         export. For example, a `city_id` "Athens" will slugify into "athens" 
@@ -111,7 +111,7 @@ def fixbikenet(
     Returns
     -------
     gaps_ordered : geopandas.geodataframe.GeoDataFrame
-        ordered geodataframe with the `numgaps` most important gaps to fill
+        Ordered geodataframe with the `numgaps` most important gaps to fill.
 
     References
     ----------
