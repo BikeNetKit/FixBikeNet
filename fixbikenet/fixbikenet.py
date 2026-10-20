@@ -47,28 +47,28 @@ from fixbikenet.functions import (
 
 def fixbikenet(
     city_query,
-    mingap = 20,
-    maxgap = 800,
-    numgaps = 50,
+    min_gap_length = 20,
+    max_gap_length = 800,
+    num_gaps = 50,
     export_data = True,
     city_id = None,
     export_plot=False,
     import_files={},
 ):
-    """Find gaps in bicycle networks and return the `numgaps` that are the most
+    """Find gaps in bicycle networks and return the `num_gaps` that are the most
     important to fill.
 
     Parameters
     ----------
     city_query : str
         Name of the city that the analysis should be performed on.
-    mingap : int, default 20
+    min_gap_length : int, default 20
         Minimum distance between node pairs to be considered as a potential 
         gap, in meters.
-    maxgap : int, default 800
+    max_gap_length : int, default 800
         Maximum distance between node pairs to be considered as a potential 
         gap, in meters.
-    numgaps : int, default 50
+    num_gaps : int, default 50
         Number of gaps to find.
     export_data : bool, default True
         If set to True, data will be saved to a file. The filename is 
@@ -111,7 +111,7 @@ def fixbikenet(
     Returns
     -------
     gaps_ordered : geopandas.geodataframe.GeoDataFrame
-        Ordered geodataframe with the `numgaps` most important gaps to fill.
+        Ordered geodataframe with the `num_gaps` most important gaps to fill.
 
     References
     ----------
@@ -122,7 +122,7 @@ def fixbikenet(
     starttime = time.time()
     np.random.seed(settings.random_seed) # Set random number generator seed for reproducibility
     setting_was_auto = _validate_settings()
-    import_files = _validate_parameters(city_query, mingap, maxgap, export_data, import_files)
+    import_files = _validate_parameters(city_query, min_gap_length, max_gap_length, export_data, import_files)
     _print_header(city_query)
     
     ### Import data files
@@ -188,10 +188,10 @@ def fixbikenet(
     contact_nodes = find_contact_nodes(G)
 
     # finding potential gaps in network
-    potential_gaps = find_potential_gaps(contact_nodes, nodes_gdf, maxgap)
+    potential_gaps = find_potential_gaps(contact_nodes, nodes_gdf, max_gap_length)
 
     # add routing for gaps in network
-    found_gaps, found_gaps_nsp = find_actual_gaps(G, potential_gaps, mingap)
+    found_gaps, found_gaps_nsp = find_actual_gaps(G, potential_gaps, min_gap_length)
 
     # calculating local betweenness score dependent on radius
     ebc = compute_local_betweenness_centrality(G, nodes_gdf)
@@ -226,17 +226,17 @@ def fixbikenet(
     )
     df = df.sort_values(by="benefit", ascending=False).reset_index(drop=True)
 
-    # Only keep the numgaps*constants._CLUSTER_GAPS_PER_FINAL_GAP most 
+    # Only keep the num_gaps*constants._CLUSTER_GAPS_PER_FINAL_GAP most 
     # important gaps before declustering. If there are fewer than 
-    # numgaps*constants._CLUSTER_GAPS_PER_FINAL_GAP gaps keep only those
-    if df.shape[0] > numgaps*constants._CLUSTER_GAPS_PER_FINAL_GAP:
-        df = df.iloc[:numgaps*constants._CLUSTER_GAPS_PER_FINAL_GAP]
+    # num_gaps*constants._CLUSTER_GAPS_PER_FINAL_GAP gaps keep only those
+    if df.shape[0] > num_gaps*constants._CLUSTER_GAPS_PER_FINAL_GAP:
+        df = df.iloc[:num_gaps*constants._CLUSTER_GAPS_PER_FINAL_GAP]
 
     #decluster edges
-    gap_df = gap_declustering(df, G, ebc, contact_nodes, mingap)
+    gap_df = gap_declustering(df, G, ebc, contact_nodes, min_gap_length)
 
     progress_bar = initialize_progress_bar("Postprocess data", 5)
-    gap_df = gap_df.nlargest(numgaps, "benefit").reset_index(drop=True)
+    gap_df = gap_df.nlargest(num_gaps, "benefit").reset_index(drop=True)
     progress_bar.update(1)
 
     # compute list of all edges that are part of each gap, where each edge is u,v

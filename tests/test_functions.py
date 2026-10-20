@@ -89,9 +89,9 @@ def create_test_contact_nodes():
     return contact_nodes
 
 @pytest.fixture
-def create_maxgap():
-    maxgap = 50
-    return maxgap
+def create_max_gap_length():
+    max_gap_length = 50
+    return max_gap_length
 
 @pytest.fixture
 def create_test_nodes_gdf():
@@ -105,8 +105,8 @@ def create_validation_gaps():
     gaps = [(1,3)]
     return gaps
 
-def test_find_potential_gaps(create_test_contact_nodes, create_maxgap, create_test_nodes_gdf, create_validation_gaps):
-    assert find_potential_gaps(create_test_contact_nodes,create_test_nodes_gdf, create_maxgap) == create_validation_gaps
+def test_find_potential_gaps(create_test_contact_nodes, create_max_gap_length, create_test_nodes_gdf, create_validation_gaps):
+    assert find_potential_gaps(create_test_contact_nodes,create_test_nodes_gdf, create_max_gap_length) == create_validation_gaps
 
 @pytest.fixture
 def create_graph_for_routing():

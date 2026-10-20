@@ -7,7 +7,8 @@ _BETWEENNESS_RANDOM_NODES : int, default 300
     Number of random nodes to select for local betweenness calculations, for
     computational reasons.
 _CLUSTER_GAPS_PER_FINAL_GAP : int, default 15
-    Factor to multiply `numgaps` with, giving the number of gaps to consider for declustering.
+    Factor to multiply `num_gaps` with, giving the number of gaps to consider 
+    for declustering.
 _CRS_CALCULATIONS : str, default 'auto'
     EPSG code of the coordinate reference system that is used to project OSM 
     data for calculations. This has to be a distance-preserving projected CRS, 
@@ -28,6 +29,6 @@ _ROUTING_PENALTY : dict, default {0: 1.5, 1: 1}
 _BETWEENNESS_RANDOM_NODES = 300
 _CLUSTER_GAPS_PER_FINAL_GAP = 15
 _CRS_CALCULATIONS = 'auto'
-_PROGRESS_BAR_DESC_LENGTH = 24
+_PROGRESS_BAR_DESC_LENGTH = 23
 _PROGRESS_BAR_LENGTH = 23
 _ROUTING_PENALTY = {0: 1.5, 1: 1}
