@@ -14,7 +14,7 @@ from fixbikenet.fixbikenet import fixbikenet
 from . import constants
 from . import osm
 from . import settings
-from . import functions
+from . import utils
 
 __author__ = "FixBikeNet contributors"
 __author_email__ = "michael@szell.net"

@@ -39,6 +39,7 @@ dependencies = [
     "osmnx>=2",
     "geojson",
     "tqdm",
+    "bikenetlib",
 ]
 
 [project.urls]

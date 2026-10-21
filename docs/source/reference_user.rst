@@ -11,7 +11,6 @@ fixbikenet.fixbikenet
 
 .. automodule:: fixbikenet.fixbikenet
    :members:
-   :no-index:
 
 
 fixbikenet.settings
@@ -19,7 +18,6 @@ fixbikenet.settings
 
 .. automodule:: fixbikenet.settings
    :members:
-   :no-index:
 
 
 fixbikenet.osm
@@ -27,4 +25,3 @@ fixbikenet.osm
 
 .. automodule:: fixbikenet.osm
    :members:
-   :no-index:

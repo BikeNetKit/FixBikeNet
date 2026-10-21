@@ -5,3 +5,4 @@ dependencies:
   - python>=3.12
   - osmnx>=2
   - tqdm
+  - bikenetlib

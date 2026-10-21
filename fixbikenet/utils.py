@@ -1,4 +1,4 @@
-"""Utility functions for `fixbikenet`."""
+"""Utility utils for `fixbikenet`."""
 
 import itertools
 import os
