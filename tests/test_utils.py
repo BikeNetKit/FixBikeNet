@@ -4,7 +4,7 @@ from networkx.utils.misc import graphs_equal
 from shapely.geometry import Point
 
 import fixbikenet as fbn
-from fixbikenet.functions import *
+from fixbikenet.utils import *
 
 fbn.constants._ROUTING_PENALTY = {0: 5, 1: 1}
 fbn.constants._BETWEENNESS_RANDOM_NODES = 300

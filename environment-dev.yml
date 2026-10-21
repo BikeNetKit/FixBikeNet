@@ -7,7 +7,7 @@ dependencies:
   - tqdm
   - bikenetlib
 
-  # additional to the non-dev env
+  # Additional to the non-dev env
   - ipykernel
   - ipywidgets
   - pytest
@@ -21,8 +21,8 @@ dependencies:
   - jupyterlab
   - matplotlib
   - pip:
-      # not available via conda-forge:
+      # Not available via conda-forge:
       - sphinx-copybutton
       - sphinxext-opengraph
       - furo
-      - fixbikenet
+      - fixbikenet # For docs, get latest version fast from pypi

@@ -5,18 +5,10 @@ This is the complete developer reference for the FixBikeNet package. If you are 
 
 
 fixbikenet.fixbikenet
------------------------
+---------------------
 
 .. automodule:: fixbikenet.fixbikenet
    :members:
-
-
-fixbikenet.functions
----------------------
-
-.. automodule:: fixbikenet.functions
-   :members:
-   :private-members:
 
 
 fixbikenet.osm
@@ -24,6 +16,14 @@ fixbikenet.osm
 
 .. automodule:: fixbikenet.osm
    :members:
+
+
+fixbikenet.utils
+----------------
+
+.. automodule:: fixbikenet.utils
+   :members:
+   :private-members:
 
 
 fixbikenet.settings

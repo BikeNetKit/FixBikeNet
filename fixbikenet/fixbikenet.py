@@ -15,7 +15,7 @@ import time
 
 import matplotlib.pyplot as plt
 
-from fixbikenet.functions import (
+from fixbikenet.utils import (
     _get_weighted_distances,
     _import_data_files,
     _print_footer,
