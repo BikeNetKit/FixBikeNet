@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 0.10.0 (2026-10-26)
+
+- ♻️ Established naming parity with GrowBikeNet
+- ♻️ Renamed several parameters/constants, moved radius to settings
+- ➕ Added bikenetlib dependency
+- 📄 Added Usage 4 docs
+
 ## Version 0.9.1 (2026-10-12)
 
 - 🐛 Fixed CRS reset
