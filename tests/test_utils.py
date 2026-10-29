@@ -97,7 +97,7 @@ def create_max_gap_length():
 def create_test_nodes_gdf():
     nodes ={'osmid':[1,2,3,4],'geometry':[Point(1,1), Point(1000,1000), Point(3,3), Point(2000,2000)]}
     nodes_gdf = gpd.GeoDataFrame(nodes)
-    nodes_gdf.set_index('osmid',inplace=True)
+    nodes_gdf = nodes_gdf.set_index('osmid')
     return nodes_gdf
 
 @pytest.fixture
@@ -139,7 +139,7 @@ def test_find_actual_gaps(create_graph_for_routing, create_potential_gaps, creat
 def create_betweenness_nodes():
     nodes = {'osmid': [1, 2, 3, 4], 'geometry': [Point(1, 1), Point(5000, 5000), Point(3, 3), Point(1000, 1000)]}
     nodes_gdf = gpd.GeoDataFrame(nodes)
-    nodes_gdf.set_index('osmid', inplace=True)
+    nodes_gdf = nodes_gdf.set_index('osmid')
     return nodes_gdf
 
 @pytest.fixture
