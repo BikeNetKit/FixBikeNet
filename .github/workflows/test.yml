@@ -56,6 +56,7 @@ jobs:
         submodule:
           - { name: "fixbikenet", pytest_args: "tests/test_fixbikenet.py" }
           - { name: "utils", pytest_args: "tests/test_utils.py" }
+          - { name: "_overpass", pytest_args: "tests/test__overpass.py" }
       fail-fast: false
 
     name: ${{ matrix.submodule.name }} (${{ matrix.python-version }} on ${{ matrix.os }})

@@ -1,19 +1,16 @@
 """Utility utils for `fixbikenet`."""
 
+from . import constants, settings, osm, _overpass
 import itertools
 import os
 import re
 from collections import defaultdict
-
 import numpy as np
 import pandas as pd
-
-from . import constants, settings, osm
-
 pd.set_option('display.max_columns', None) # for debugging
+np.set_printoptions(legacy='1.25')
 import datetime
 import sys  # noqa: F401, use sys.exit() for debugging
-
 import geopandas as gpd
 import networkx as nx
 import osmnx as ox

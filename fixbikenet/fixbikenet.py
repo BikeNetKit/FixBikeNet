@@ -1,18 +1,17 @@
-import os
+"""Main procedure for running `fixbikenet`."""
 
+from . import constants, settings, osm, _overpass
+import os
 import geopandas as gpd
 import networkx as nx
 import numpy as np
 import osmnx as ox
 import pandas as pd
 import warnings
-
-from . import constants, settings, osm
-
 pd.set_option('display.max_columns', None) # for debugging
+np.set_printoptions(legacy='1.25')
 import sys  # noqa: F401, use sys.exit() for debugging
 import time
-
 import matplotlib.pyplot as plt
 
 from fixbikenet.utils import (
@@ -290,7 +289,7 @@ def fixbikenet(
                     slugify(city_string) + "-fixbikenet-gaps" + "." + settings.export_file_format
             )
 
-            edges_gdf.drop(["osmid"], axis=1, inplace=True)
+            edges_gdf = edges_gdf.drop(["osmid"], axis=1)
             city_boundary.to_crs(epsg=4326, inplace=True)
             if settings.export_file_format == "geojson":
                 progress_bar = initialize_progress_bar("Exporting data", 4, "file")
