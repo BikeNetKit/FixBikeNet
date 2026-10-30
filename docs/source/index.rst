@@ -8,6 +8,8 @@ FixBikeNet |version| documentation
 
 The Python package ``fixbikenet`` identifies the most important gaps to fill in a city's bicycle network. You can download street and bike network data with a single line of code, simulate different bicycle network fixing scenarios, and export and plot the resulting prioritized gaps. It is hosted on `Github <https://github.com/BikeNetKit/FixBikeNet>`__, part of `BikeNetKit <https://bikenetkit.org>`__.
 
+|Example Copenhagen|
+
 FixBikeNet is a decision support tool for urban planners. It is also useful for proactive citizens to help inform their city about data-driven improvements, and it aims to foster research on bicycle networks.
 
 When to use
@@ -54,6 +56,8 @@ and the EU HORIZON grant JUST STREETS.
 
 Developed by |NERDS|
 
+.. |Example Copenhagen| image:: _static/fixbikenet_animated.gif
+   :target: https://bikenetkit.org/fixbikenet/copenhagen_dk
 .. |Innovation Fund Denmark| image:: https://raw.githubusercontent.com/BikeNetKit/.github/refs/heads/main/profile/_static/logo_innovationfund.png
    :target: https://innovationsfonden.dk/en
 .. |European Union| image:: https://raw.githubusercontent.com/BikeNetKit/.github/refs/heads/main/profile/_static/logo_eu.png

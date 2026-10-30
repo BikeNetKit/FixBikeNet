@@ -9,6 +9,8 @@
 
 The Python package `fixbikenet` identifies the most important gaps to fill in a city's bicycle network. You can download street and bike network data with a single line of code, simulate different bicycle network fixing scenarios, and export and plot the resulting prioritized gaps.
 
+[![Example Copenhagen](https://github.com/BikeNetKit/GrowBikeNet/raw/main/docs/source/_static/fixbikenet_animated.gif)](https://bikenetkit.org/fixbikenet/copenhagen_dk)
+
 FixBikeNet is a decision support tool for urban planners. It is also useful for proactive citizens to help inform their city about data-driven improvements, and it aims to foster research on bicycle networks.
 
 ## When to use
