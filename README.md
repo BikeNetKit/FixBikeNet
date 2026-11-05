@@ -39,7 +39,8 @@ We provide a minimum working example in two formats:
 - Jupyter notebook ([examples/mwe.ipynb](examples/mwe.ipynb))
 
 ## Documentation
-Find more information in our docs: [https://docs.bikenetkit.org/FixBikeNet/](https://docs.bikenetkit.org/FixBikeNet/)
+Find more information in our docs: [https://docs.bikenetkit.org/FixBikeNet/](https://docs.bikenetkit.org/FixBikeNet/)  
+See also our [Frequently Asked Questions](https://faq.bikenetkit.org).
 
 ## Origin
 The source code builds on [the code from the research paper](https://github.com/anastassiavybornova/bikenwgaps) _Automated Detection of Missing Links in Bicycle Networks_.

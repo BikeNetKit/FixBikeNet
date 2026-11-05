@@ -24,7 +24,7 @@ Setup and use
 
 To set up FixBikeNet, see the :doc:`installation` page.
 To use FixBikeNet, the :doc:`getting_started` page
-is a good place to start, which also explains how the package works in detail. For technical documentation, consult the :doc:`reference_user`.
+is a good place to start, which also explains how the package works in detail. For technical documentation, consult the :doc:`reference_user`. See also our `Frequently Asked Questions <https://faq.bikenetkit.org>`__.
 
 Origin
 ------
