@@ -24,6 +24,7 @@ from fixbikenet.utils import (
     _validate_parameters,
     _validate_settings,
     add_point_data_to_net,
+    add_trip_data_to_net,
     compute_local_betweenness_centrality,
     create_gdf_with_geoms,
     download_network,
@@ -106,6 +107,13 @@ def fixbikenet(
             from this file, representing point events like traffic crashes or 
             citizen feedback to improve bike infrastructure. Must be a gpkg or geojson file in unprojected CRS EPSG:4326 containing only point objects, optionally with an int ``num`` column that encodes the 
             number of point events. The data set is used to re-prioritize the ordering of the network gaps, controlled with `settings.import_data_impact`.
+         - 'trip_data' : None or str, default None
+            If not set to None, an additional data set of trips will be loaded
+            from this file, representing trip events for prioritizing bike
+            infrastructure growth. Must be a csv file in unprojected CRS EPSG:4326 containing the following fields:
+            ``o_lat, o_lon, d_lat, d_lon``. Optionally there can be an int
+            ``num`` field that encodes the number of trips between each origin
+            and destination.
 
     Returns
     -------
@@ -125,7 +133,7 @@ def fixbikenet(
     _print_header(city_query)
     
     ### Import data files
-    num_data_files, point_data, _ = _import_data_files(import_files) # trip_data set to _. To do in the future.
+    num_data_files, point_data, trip_data = _import_data_files(import_files) # trip_data set to _. To do in the future.
 
     # Get city boundary
     if import_files['city_boundary']:
@@ -194,6 +202,11 @@ def fixbikenet(
 
     # calculating local betweenness score dependent on radius
     ebc = compute_local_betweenness_centrality(G, nodes_gdf)
+
+    if trip_data is not None:
+        G_trips = add_trip_data_to_net(trip_data, G, matching_distance=settings.import_trip_data_snap_distance)
+        trips = nx.get_edge_attributes(G_trips, 'num_points')
+        ebc = {key: value * trips[key] for key , value in ebc.items()}
 
     G_lengths = nx.get_edge_attributes(G, "length")
     nx.set_edge_attributes(G, G_lengths, "distance")

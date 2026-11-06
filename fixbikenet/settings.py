@@ -11,6 +11,9 @@ import_data_impact : float, default 10000
 import_point_data_snap_distance : int, default 100
     Maximum distance between point data and network links for snapping, in 
     meters.
+import_trip_data_snap_distance : int, default 500
+    Maximum distance between trip data and network links for snapping, in
+    meters.
 import_path : str
     Path to import files (as defined in `fixbikenet`'s import_files parameter).
 radius : int, default 2500
@@ -25,6 +28,7 @@ export_file_format = 'gpkg'
 export_path = "./results/"
 import_data_impact = 10000
 import_point_data_snap_distance = 100
+import_trip_data_snap_distance = 500
 import_path = "./"
 
 radius = 2500
