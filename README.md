@@ -45,13 +45,28 @@ See also our [Frequently Asked Questions](https://faq.bikenetkit.org).
 ## Origin
 The source code builds on [the code from the research paper](https://github.com/anastassiavybornova/bikenwgaps) _Automated Detection of Missing Links in Bicycle Networks_.
 
-**Publication**: [https://doi.org/10.1111/gean.12324](https://doi.org/10.1111/gean.12324)
-
 ## How to cite
 If you use FixBikeNet in your research, please cite the paper:
 
 > A. Vybornova, T. Cunha, A. Gühnemann, M. Szell. Automated Detection of Missing Links in Bicycle Networks. Geographical Analysis 55(2), 239-267 (2023) 
 > DOI: [10.1111/gean.12324](https://doi.org/10.1111/gean.12324)
+
+<details>
+<summary>BibTeX</summary>
+
+```bibtex
+@article{vybornova2023adm,
+  title = {Automated Detection of Missing Links in Bicycle Networks},
+  author = {Vybornova, Anastassia and Cunha, Tiago and G{\"u}hnemann, Astrid and Szell, Michael},
+  journal = {Geographical Analysis},
+  year = {2023},
+  volume = {55},
+  number = {2},
+  pages = {239--267},
+  doi = {10.1111/gean.12324}
+}
+```
+</details>
 
 ## Supported by
 Development of BikeNetKit/FixBikeNet is supported by the [Innovation Fund Denmark](https://innovationsfonden.dk/en) and the EU HORIZON project [JUST STREETS](https://www.just-streets.eu).
