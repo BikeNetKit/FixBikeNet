@@ -1,13 +1,57 @@
 import geopandas as gpd
 import pytest
+import networkx as nx
 from networkx.utils.misc import graphs_equal
 from shapely.geometry import Point
 
 import fixbikenet as fbn
-from fixbikenet.utils import *
+from fixbikenet import constants, settings
+from fixbikenet.utils import (
+    _validate_parameters,
+    _validate_settings,
+    find_edges_to_drop,
+    weigh_edges,
+    find_contact_nodes,
+    find_potential_gaps,
+    find_actual_gaps,
+    rank_gaps_by_b,
+    assign_pbi_to_edges
+)
 
 fbn.constants._ROUTING_PENALTY = {0: 5, 1: 1}
 fbn.constants._BETWEENNESS_RANDOM_NODES = 300
+
+def test_validate_parameters():
+    with pytest.raises(TypeError):
+        _validate_parameters(city_query=7, min_gap_length=500, max_gap_length=1000, export_data=False, import_files={})
+    with pytest.raises(TypeError):
+        _validate_parameters(city_query='Copenhagen Municipality', min_gap_length='test', max_gap_length=1000, export_data=False, import_files={})
+    with pytest.raises(TypeError):
+        _validate_parameters(city_query='Copenhagen Municipality', min_gap_length=500, max_gap_length='test',
+                             export_data=False, import_files={})
+    with pytest.raises(TypeError):
+        _validate_parameters(city_query='Copenhagen Municipality', min_gap_length=500, max_gap_length=1000,
+                             export_data='test', import_files={})
+    with pytest.raises(TypeError):
+        _validate_parameters(city_query='Copenhagen Municipality', min_gap_length=500, max_gap_length=1000,
+                             export_data=False, import_files=7)
+    with pytest.raises(FileNotFoundError):
+        _validate_parameters(city_query='Copenhagen Municipality', min_gap_length=500, max_gap_length=1000,
+                             export_data=False, import_files={'city_boundary': 'test'})
+
+def test_validate_settings():
+    constants._CRS_CALCULATIONS = 7
+    with pytest.raises(TypeError):
+        _validate_settings()
+    constants._CRS_CALCULATIONS = 'auto'
+    settings.export_file_format = 'test'
+    with pytest.raises(ValueError):
+        _validate_settings()
+    settings.export_file_format = 'gpkg'
+    settings.radius = 'test'
+    with pytest.raises(TypeError):
+        _validate_settings()
+    settings.radius = 2500
 
 @pytest.fixture
 def create_test_graph():
