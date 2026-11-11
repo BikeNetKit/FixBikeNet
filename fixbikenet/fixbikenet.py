@@ -1,5 +1,6 @@
 """Main procedure for running `fixbikenet`."""
 
+import bikenetlib as bnl
 from . import constants, settings, osm, _overpass
 import os
 import geopandas as gpd
@@ -87,9 +88,9 @@ def fixbikenet(
 
         - 'city_boundary' : None or str, default None
             If not set to None, the study area is selected from the 
-            (Multi)Polygon provided in the city_boundary shape or gpkg file, 
-            ideally in unprojected latitude-longitude degrees (EPSG:4326), but 
-            EPSG:3857 also works.
+            (Multi)Polygon provided in the city_boundary shape, gpkg, or 
+            geojson file, ideally in unprojected latitude-longitude degrees 
+            (EPSG:4326), but EPSG:3857 also works.
         - 'street_network' : str | None, default None
             If not set to None, the street network is loaded from this file. 
             For best results, this network should encompass both car and 
