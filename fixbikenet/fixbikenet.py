@@ -209,8 +209,10 @@ def fixbikenet(
     nx.set_edge_attributes(G, G_lengths, "distance_weighted")
 
     if trip_data is not None:
-        G_trips = add_trip_data_to_net(trip_data, G, matching_distance=settings.import_trip_data_snap_distance)
+        G_trips = add_trip_data_to_net(trip_data, nx.Graph(ox.project_graph(nx.MultiDiGraph(G)), to_crs=constants._CRS_CALCULATIONS), matching_distance=settings.import_trip_data_snap_distance)
         trips = nx.get_edge_attributes(G_trips, 'num_trips')
+        print(trips)
+        sys.exit()
         ebc = {key: value * trips[key] for key, value in ebc.items()}
 
     # Add point data to edges

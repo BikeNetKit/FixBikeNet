@@ -155,7 +155,8 @@ def add_trip_data_to_net(trips, A, matching_distance=settings.import_trip_data_s
         integer. This could be (number of) trip events. If ``num`` column is
         not provided, assumes 1 per trip.
     A: networkx.graph
-        Graph to match trip data to.
+        Graph to match trip data to, in projected crs 
+        `constants._CRS_CALCULATIONS`.
     matching_distance : int, default `settings.import_trip_data_snap_distance`
         Matching distance in meters. Set via
         `settings.import_trip_data_snap_distance`.
@@ -202,12 +203,10 @@ def add_trip_data_to_net(trips, A, matching_distance=settings.import_trip_data_s
         path = nx.shortest_path(graph_with_data, source=o_node, target=d_node, weight="distance")
         path_edges = list(zip(path[:-1], path[1:]))
 
-
         # Add the number of trips to each edge of the shortest path
         for i, edge_id in enumerate(path_edges):
             if edge_id in trip_dict:
                 trip_dict[edge_id] += num
-
             else:
                 edge_id = (path[i + 1], path[i])  # Inverse node order
                 if edge_id in trip_dict:
