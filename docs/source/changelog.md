@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 0.10.1 (2026-11-11)
+
+- 🐛 Fixed a critical bug about bikenetlib not being loaded
+- 🐛 Fixed a critical bug about network download and simplification
+- ✅ Increased test coverage
+
+
 ## Version 0.10.0 (2026-10-26)
 
 - ♻️ Established naming parity with GrowBikeNet
@@ -7,10 +14,12 @@
 - ➕ Added bikenetlib dependency
 - 📄 Added Usage 4 docs
 
+
 ## Version 0.9.1 (2026-10-12)
 
 - 🐛 Fixed CRS reset
 - 📄 Added Usage 1 docs
+
 
 ## Version 0.9.0 (2026-10-11)
 
@@ -20,11 +29,13 @@
 - ⬆️ Updated actions versions
 - 📄 Added OG to docs
 
+
 ## Version 0.8.2 (2026-09-25)
 
 - 🐛 Added footway to pbi mapping
 - 🐛 Fixed mingap checks
 - 🎨 Turned gap lengths to integers
+
 
 ## Version 0.8.1 (2026-09-12)
 
@@ -35,6 +46,7 @@
 - 🎨 Cleaned up exported files
 - 📄 Updated docs to account for conda
 - 📄 Established docs parity with growbikenet
+
 
 ## Version 0.8.0 (2026-09-03)
 
@@ -52,6 +64,7 @@
 - ⬆️ Upgraded dependencies and Python versions
 - 🔧 Updated project metadata
 
+
 ## Version 0.7.0 (2026-06-25)
 
 - 🔧 moved from config.yml to config.py setup in package
@@ -59,10 +72,12 @@
 - ✨ added declustering step to pipeline
 - ✨ set maxgap default value to 1000 for better results
 
+
 ## Version 0.6.0 (2026-05-27)
 
 - 🔧 fix for config.yml in package
 - 🔧 solve issues when highway type not in config
+
 
 ## Version 0.5.0 (2026-05-06)
 
