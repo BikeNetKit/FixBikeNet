@@ -171,16 +171,22 @@ def download_network(city_query, network_type='drive', custom_filter=None, retai
     # Fetch street network data from osmnx
     if city_boundary_geometry is None:
         g = ox.graph_from_place(
-        city_query, network_type=network_type, custom_filter=custom_filter, retain_all=retain_all
+            city_query, 
+            network_type=network_type, 
+            custom_filter=custom_filter, 
+            retain_all=retain_all, 
+            simplify=False
         )
     else:
         g = ox.graph_from_polygon(
-        city_boundary_geometry, network_type=network_type, custom_filter=custom_filter, retain_all=retain_all
+            city_boundary_geometry, 
+            network_type=network_type, 
+            custom_filter=custom_filter, 
+            retain_all=retain_all, 
+            simplify=False
         )
 
-    g_undir = g.to_undirected().copy() # convert to undirected (dropping OSMnx keys!)
-
-    return g_undir
+    return g
 
 
 def import_network(street_network):
