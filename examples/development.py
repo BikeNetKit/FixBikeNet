@@ -24,12 +24,13 @@ fbn.settings.export_file_format = 'gpkg'
 fbn.settings.radius = 1000
 
 fbn.fixbikenet(
-    city_query="Frederiksberg Municipality",
+    city_query="Turin center",
     min_gap_length = 0,
     max_gap_length = 100,
     num_gaps = 20,
     import_files={
-        'city_boundary': "./tests/test_data/frederiksberg_boundary.geojson",
+        'city_boundary': "./tests/test_data/turin_center_boundary.geojson",
+        'trip_data': "./tests/test_data/turin_trips.csv",
         # 'street_network': "./tests/test_data/frederiksberg_streetbike_network.gpkg",
     },
 )

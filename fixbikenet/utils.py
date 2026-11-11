@@ -155,7 +155,7 @@ def add_trip_data_to_net(trips, A, matching_distance=settings.import_trip_data_s
         integer. This could be (number of) trip events. If ``num`` column is
         not provided, assumes 1 per trip.
     A: networkx.graph
-        Graph created from triangulation edge list.
+        Graph to match trip data to.
     matching_distance : int, default `settings.import_trip_data_snap_distance`
         Matching distance in meters. Set via
         `settings.import_trip_data_snap_distance`.
@@ -213,7 +213,7 @@ def add_trip_data_to_net(trips, A, matching_distance=settings.import_trip_data_s
                 if edge_id in trip_dict:
                     trip_dict[edge_id] += num
 
-    nx.set_edge_attributes(graph_with_data, trip_dict, "num_trips")
+    nx.set_edge_attributes(graph_with_data, trip_dict, 'num_trips')
     return graph_with_data
 
 def download_network(city_query, network_type='drive', custom_filter=None, retain_all=True, city_boundary_geometry=None):
@@ -250,16 +250,22 @@ def download_network(city_query, network_type='drive', custom_filter=None, retai
     # Fetch street network data from osmnx
     if city_boundary_geometry is None:
         g = ox.graph_from_place(
-        city_query, network_type=network_type, custom_filter=custom_filter, retain_all=retain_all
+            city_query, 
+            network_type=network_type, 
+            custom_filter=custom_filter, 
+            retain_all=retain_all, 
+            simplify=False
         )
     else:
         g = ox.graph_from_polygon(
-        city_boundary_geometry, network_type=network_type, custom_filter=custom_filter, retain_all=retain_all
+            city_boundary_geometry, 
+            network_type=network_type, 
+            custom_filter=custom_filter, 
+            retain_all=retain_all, 
+            simplify=False
         )
 
-    g_undir = g.to_undirected().copy() # convert to undirected (dropping OSMnx keys!)
-
-    return g_undir
+    return g
 
 
 def import_network(street_network):

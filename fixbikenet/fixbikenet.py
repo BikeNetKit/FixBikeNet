@@ -1,5 +1,6 @@
 """Main procedure for running `fixbikenet`."""
 
+import bikenetlib as bnl
 from . import constants, settings, osm, _overpass
 import os
 import geopandas as gpd
@@ -88,9 +89,9 @@ def fixbikenet(
 
         - 'city_boundary' : None or str, default None
             If not set to None, the study area is selected from the 
-            (Multi)Polygon provided in the city_boundary shape or gpkg file, 
-            ideally in unprojected latitude-longitude degrees (EPSG:4326), but 
-            EPSG:3857 also works.
+            (Multi)Polygon provided in the city_boundary shape, gpkg, or 
+            geojson file, ideally in unprojected latitude-longitude degrees 
+            (EPSG:4326), but EPSG:3857 also works.
         - 'street_network' : str | None, default None
             If not set to None, the street network is loaded from this file. 
             For best results, this network should encompass both car and 
@@ -133,7 +134,7 @@ def fixbikenet(
     _print_header(city_query)
     
     ### Import data files
-    num_data_files, point_data, trip_data = _import_data_files(import_files) # trip_data set to _. To do in the future.
+    num_data_files, point_data, trip_data = _import_data_files(import_files)
 
     # Get city boundary
     if import_files['city_boundary']:
@@ -203,14 +204,15 @@ def fixbikenet(
     # calculating local betweenness score dependent on radius
     ebc = compute_local_betweenness_centrality(G, nodes_gdf)
 
-    if trip_data is not None:
-        G_trips = add_trip_data_to_net(trip_data, G, matching_distance=settings.import_trip_data_snap_distance)
-        trips = nx.get_edge_attributes(G_trips, 'num_points')
-        ebc = {key: value * trips[key] for key , value in ebc.items()}
-
     G_lengths = nx.get_edge_attributes(G, "length")
     nx.set_edge_attributes(G, G_lengths, "distance")
     nx.set_edge_attributes(G, G_lengths, "distance_weighted")
+
+    if trip_data is not None:
+        G_trips = add_trip_data_to_net(trip_data, G, matching_distance=settings.import_trip_data_snap_distance)
+        trips = nx.get_edge_attributes(G_trips, 'num_trips')
+        ebc = {key: value * trips[key] for key, value in ebc.items()}
+
     # Add point data to edges
     if point_data is not None:
         G_gaps = nx.MultiGraph(G.subgraph(set(n for nlist in found_gaps_nsp for n in nlist))) # To do once pythonmin>=3.15: *nlist for nlist in found_gaps_nsp

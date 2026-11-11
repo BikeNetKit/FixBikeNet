@@ -7,28 +7,42 @@ import fixbikenet as fbn
 fbn.constants._CRS_CALCULATIONS = 'auto'
 valcols = ['source', 'target']
 
+
+def test_fixbikenet_success_online():
+    """Verify that the online version of fixbikenet does not throw an error.
+    """
+    fbn.constants._ROUTING_PENALTY = {0: 1.5, 1: 1}
+    fbn.settings.radius = 1000
+    gaps_ordered = fbn.fixbikenet(
+        city_query="Frederiksberg municipality",
+        min_gap_length = 0,
+        max_gap_length = 100,
+        num_gaps = 20,
+    )
+
+
 @pytest.fixture
 def validation_gdf_frederiksberg():
     gdf = gpd.read_file("./tests/test_data/frederiksberg-fixbikenet-gaps.gpkg", layer='Identified gaps')
     return gdf
 
-
-def test_fixbikenet_case_success_offline1(validation_gdf_frederiksberg):
+def test_fixbikenet_success_offline(validation_gdf_frederiksberg):
     """Verify that the offline version of fixbikenet works as intended.
     """
     fbn.constants._ROUTING_PENALTY = {0: 1.5, 1: 1}
     fbn.settings.radius = 1000
     gaps_ordered = fbn.fixbikenet(
-            city_query="Frederiksberg",
-            min_gap_length = 0,
-            max_gap_length = 100,
-            num_gaps = 20,
-            import_files={
-                'city_boundary': "./tests/test_data/frederiksberg_boundary.geojson",
-                'street_network': "./tests/test_data/frederiksberg_streetbike_network.gpkg",
-            },
-        )
+        city_query="Frederiksberg municipality",
+        min_gap_length = 0,
+        max_gap_length = 100,
+        num_gaps = 20,
+        import_files={
+            'city_boundary': "./tests/test_data/frederiksberg_boundary.geojson",
+            'street_network': "./tests/test_data/frederiksberg_streetbike_network.gpkg",
+        },
+    )
     assert_frame_equal(
         validation_gdf_frederiksberg[valcols],
         gaps_ordered[valcols]
     )
+
