@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "turin_it",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { }, "geometry": { "type": "Polygon", "coordinates": [ [ [ 7.614512,45.066065 ], [ 7.614512,45.090278 ], [ 7.655497,45.090278 ], [ 7.655497,45.066065 ], [ 7.614512,45.066065 ] ] ] } }
+]
+}
