@@ -8,7 +8,7 @@ fbn.constants._CRS_CALCULATIONS = 'auto'
 valcols = ['source', 'target']
 
 
-def test_fixbikenet_success_online():
+def test_fixbikenet_success_online_mwe():
     """Verify that the online version of fixbikenet does not throw an error.
     """
     fbn.constants._ROUTING_PENALTY = {0: 1.5, 1: 1}

@@ -5,6 +5,7 @@
 - 🐛 Fixed a critical bug about bikenetlib not being loaded
 - 🐛 Fixed a critical bug about network download and simplification
 - ✅ Increased test coverage
+- 👷 Added `_overpass` test
 
 
 ## Version 0.10.0 (2026-10-26)
