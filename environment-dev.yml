@@ -20,9 +20,7 @@ dependencies:
   - pixi-kernel
   - jupyterlab
   - matplotlib
-  - pip:
-      # Not available via conda-forge:
-      - sphinx-copybutton
-      - sphinxext-opengraph
-      - furo
-      - fixbikenet # For docs, get latest version fast from pypi
+  - sphinx-copybutton
+  - sphinxext-opengraph
+  - furo
+  - fixbikenet # For docs

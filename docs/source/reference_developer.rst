@@ -11,10 +11,24 @@ fixbikenet.fixbikenet
    :members:
 
 
+fixbikenet.constants
+--------------------
+
+.. automodule:: fixbikenet.constants
+   :members:
+
+
 fixbikenet.osm
 --------------
 
 .. automodule:: fixbikenet.osm
+   :members:
+
+
+fixbikenet.settings
+-------------------
+
+.. automodule:: fixbikenet.settings
    :members:
 
 
@@ -24,10 +38,3 @@ fixbikenet.utils
 .. automodule:: fixbikenet.utils
    :members:
    :private-members:
-
-
-fixbikenet.settings
--------------------
-
-.. automodule:: fixbikenet.settings
-   :members:

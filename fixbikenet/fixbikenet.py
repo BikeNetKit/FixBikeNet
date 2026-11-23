@@ -96,11 +96,11 @@ def fixbikenet(
             For best results, this network should encompass both car and 
             protected bicycle infrastructure. Must be a gpkg file in 
             unprojected crs EPSG:4326 with layers nodes and edges, with the
-            structure that an undirected osmnx street network g has after saved 
-            via ox.io.save_graph_geopackage(). For example:
-            >>> import fixbikenet as fbn
-            >>> g = ox.graph_from_place("Barcelona", simplify=False, retain_all=True, custom_filter = fbn.osm.CARPBI_NETWORK_CUSTOM_FILTER)
-            >>> g = nx.MultiGraph(ox.convert.to_digraph(g))
+            structure that an osmnx street network g has after saved via 
+            ox.io.save_graph_geopackage(). For example:
+
+            >>> import bikenetlib as bnl
+            >>> g = ox.graph_from_place("Barcelona", simplify=False, retain_all=True, custom_filter = bnl.osm.CARPBI_NETWORK_CUSTOM_FILTER)
             >>> ox.io.save_graph_geopackage(g, "Barcelona_carpbi_network.gpkg").
         - 'point_data' : None or str, default None
             If not set to None, an additional data set of points will be loaded 
