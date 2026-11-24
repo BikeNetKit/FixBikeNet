@@ -18,10 +18,3 @@ fixbikenet.settings
 
 .. automodule:: fixbikenet.settings
    :members:
-
-
-fixbikenet.osm
---------------
-
-.. automodule:: fixbikenet.osm
-   :members:

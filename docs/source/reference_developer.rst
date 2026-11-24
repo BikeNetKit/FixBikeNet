@@ -18,13 +18,6 @@ fixbikenet.constants
    :members:
 
 
-fixbikenet.osm
---------------
-
-.. automodule:: fixbikenet.osm
-   :members:
-
-
 fixbikenet.settings
 -------------------
 

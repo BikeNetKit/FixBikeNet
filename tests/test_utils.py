@@ -73,7 +73,7 @@ def create_validation_graph():
     nx.set_edge_attributes(G, attributes)
     return G
 
-def test_edge_infra_mapping(create_test_graph, create_validation_graph):
+def test_assign_pbi_to_edges(create_test_graph, create_validation_graph):
     assert graphs_equal(assign_pbi_to_edges(create_test_graph), create_validation_graph)
 
 @pytest.fixture
