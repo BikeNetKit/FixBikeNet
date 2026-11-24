@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.10.2 (2026-11-24)
+
+- 🐛 Fixed `useful_tags_way` bug (by loading bnl.osm)
+
+
 ## Version 0.10.1 (2026-11-11)
 
 - 🐛 Fixed a critical bug about bikenetlib not being loaded
