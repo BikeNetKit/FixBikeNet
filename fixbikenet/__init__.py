@@ -12,7 +12,6 @@ from importlib.metadata import PackageNotFoundError, version
 
 from fixbikenet.fixbikenet import fixbikenet
 from . import constants
-from . import osm
 from . import settings
 from . import utils
 

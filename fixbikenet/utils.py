@@ -1,6 +1,6 @@
 """Utility utils for `fixbikenet`."""
 
-from . import constants, settings, osm, _overpass
+from . import constants, settings, _overpass
 import itertools
 import os
 import re
@@ -18,6 +18,8 @@ import shapely
 from shapely.geometry import LineString, Point
 from shapely.strtree import STRtree
 from tqdm import tqdm
+
+import bikenetlib as bnl
 
 
 def _validate_parameters(
@@ -140,7 +142,9 @@ def initialize_progress_bar(desc_string, total=1, unit="step"):
 def download_network(city_query, network_type='drive', custom_filter=None, retain_all=True, city_boundary_geometry=None):
     """Download and prepare a street network from OSM via OSMnx.
 
-    Downloads a network with a given `network_type` and `custom_filter` using ``ox.graph_from_place()``. Then, stores the undirected OSM data in geodataframes and projects using `constants._CRS_CALCULATIONS`.
+    Downloads a network with a given `network_type` and `custom_filter` using 
+    ``ox.graph_from_place()``. Then, stores the OSM data in geodataframes and 
+    projects using `constants._CRS_CALCULATIONS`.
 
     Parameters
     ----------
@@ -165,8 +169,8 @@ def download_network(city_query, network_type='drive', custom_filter=None, retai
         Extracted OSM nodes, projected.
     edges : geopandas.geodataframe.GeoDataFrame
         Extracted OSM edges, projected.
-    g_undir : networkx.classes.multigraph.MultiGraph
-        Extracted networkX graph, undirected.
+    g : networkx.classes.multigraph.MultiDiGraph
+        Extracted networkX graph, directed.
     """
     # Fetch street network data from osmnx
     if city_boundary_geometry is None:
@@ -200,10 +204,10 @@ def import_network(street_network):
     street_network : str
         The street network will be loaded from this file. Must be a gpkg file 
         in unprojected crs EPSG:4326 with layers nodes and edges, with the 
-        structure that a osmnx street network g has after saving its undirected 
-        version via ox.io.save_graph_geopackage(). For example:
+        structure that a osmnx street network g has after saving it via 
+        ox.io.save_graph_geopackage(). For example:
+
         >>> g = ox.graph_from_place("Barcelona", network_type='all')
-        >>> g = nx.MultiGraph(ox.convert.to_digraph(g))
         >>> ox.io.save_graph_geopackage(g, "Barcelona_streets.gpkg")
     import_path : str, default settings.import_path
         Path to import files.
@@ -214,8 +218,8 @@ def import_network(street_network):
         Extracted OSM nodes, projected.
     edges : geopandas.geodataframe.GeoDataFrame
         Extracted OSM edges, projected.
-    g_undir : networkx.classes.multigraph.MultiGraph
-        Extracted networkX graph, undirected.
+    g : networkx.classes.multigraph.MultiDiGraph
+        Extracted networkX graph.
     city_boundary_gdf : geopandas.geodataframe.GeoDataFrame
         Convex hull of the street network.
     """
@@ -271,13 +275,13 @@ def assign_pbi_to_edges(g):
     """
     for edge in g.edges(keys=True):
         assigned_pbi = 0
-        for tag in osm.PBI_DICT:
-            if g.edges[edge].get(tag) in osm.PBI_DICT[tag]:
+        for tag in bnl.osm.PBI_DICT:
+            if g.edges[edge].get(tag) in bnl.osm.PBI_DICT[tag]:
                 assigned_pbi = 1
         if not assigned_pbi: # Check if the edge fulfills a subcriterion
-            for tag in osm.PBI_DICT_SUB:
-                subtag = list(osm.PBI_DICT_SUB[tag][1].keys())[0]
-                if g.edges[edge].get(tag) in osm.PBI_DICT_SUB[tag][0] and g.edges[edge].get(subtag) in osm.PBI_DICT_SUB[tag][1][subtag] and g.edges[edge].get("access") != 'private':
+            for tag in bnl.osm.PBI_DICT_SUB:
+                subtag = list(bnl.osm.PBI_DICT_SUB[tag][1].keys())[0]
+                if g.edges[edge].get(tag) in bnl.osm.PBI_DICT_SUB[tag][0] and g.edges[edge].get(subtag) in bnl.osm.PBI_DICT_SUB[tag][1][subtag] and g.edges[edge].get("access") != 'private':
                     assigned_pbi = 1
         g.edges[edge]["pbi"] = assigned_pbi
 

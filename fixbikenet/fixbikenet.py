@@ -1,7 +1,7 @@
 """Main procedure for running `fixbikenet`."""
 
 import bikenetlib as bnl
-from . import constants, settings, osm, _overpass
+from . import constants, settings, _overpass
 import os
 import geopandas as gpd
 import networkx as nx
@@ -150,7 +150,7 @@ def fixbikenet(
         city_boundary_geometry = city_boundary_gdf.geometry[0]
         # Fetch carpbi network data from osmnx
         # Due to retain_all=False, this fetches the largest connected component
-        g = download_network(city_query, network_type='drive', custom_filter=osm.CARPBI_NETWORK_CUSTOM_FILTER, retain_all=False, city_boundary_geometry=city_boundary_geometry)
+        g = download_network(city_query, custom_filter=bnl.osm.CARPBI_NETWORK_CUSTOM_FILTER, retain_all=False, city_boundary_geometry=city_boundary_geometry)
     
     progress_bar.update(1)
     progress_bar.close()
@@ -163,7 +163,8 @@ def fixbikenet(
     progress_bar.update(1)
     g = ox.distance.add_edge_lengths(g)
 
-    # check which edges have existing bike infrastructure as defined in config/config_osm.yml and assign boolean value to edges
+    # check which edges have existing bike infrastructure and assign boolean 
+    # value to edges
     g = assign_pbi_to_edges(g)
     progress_bar.update(1)
     progress_bar.close()
